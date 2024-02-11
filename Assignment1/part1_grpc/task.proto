@@ -1,0 +1,54 @@
+syntax = "proto3";
+
+package marketplace;
+
+// Message for seller registration request
+message RegisterSellerRequest {
+    string ip_port = 1; // IP:Port of the notification server
+    string uuid = 2;    // Unique UUID of the seller
+}
+
+// Response to seller registration request
+message RegisterSellerResponse {
+    enum Status {
+        SUCCESS = 0;
+        FAILED = 1;
+    }
+    Status status = 1;
+}
+
+
+// Enum for product categories
+enum ProductCategory {
+    ELECTRONICS = 0;
+    FASHION = 1;
+    OTHERS = 2;
+}
+
+// Message for selling an item request
+message SellItemRequest {
+    string product_name = 1;            // Product name
+    ProductCategory category = 2;       // Product category
+    int32 quantity = 3;                 // Quantity available
+    string description = 4;             // Description of the product
+    string seller_address = 5;          // Seller's address
+    string seller_uuid = 6;             // Seller's UUID
+    float price_per_unit = 7;           // Price per unit
+}
+
+// Response to selling an item request
+message SellItemResponse {
+    enum Status {
+        SUCCESS = 0;
+        FAILED = 1;
+    }
+    Status status = 1;
+    string message = 2;
+    int32 item_id = 3;                  // Unique ID assigned to the item by the market
+}
+// Define Market service
+service Market {
+    // RPC method for registering a seller
+    rpc RegisterSeller (RegisterSellerRequest) returns (RegisterSellerResponse);
+    rpc SellItem (SellItemRequest) returns (SellItemResponse);
+}
