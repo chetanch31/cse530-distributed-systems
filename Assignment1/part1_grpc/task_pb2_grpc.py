@@ -25,6 +25,21 @@ class MarketStub(object):
                 request_serializer=task__pb2.SellItemRequest.SerializeToString,
                 response_deserializer=task__pb2.SellItemResponse.FromString,
                 )
+        self.UpdateItem = channel.unary_unary(
+                '/marketplace.Market/UpdateItem',
+                request_serializer=task__pb2.UpdateItemRequest.SerializeToString,
+                response_deserializer=task__pb2.UpdateItemResponse.FromString,
+                )
+        self.DeleteItem = channel.unary_unary(
+                '/marketplace.Market/DeleteItem',
+                request_serializer=task__pb2.DeleteItemRequest.SerializeToString,
+                response_deserializer=task__pb2.DeleteItemResponse.FromString,
+                )
+        self.DisplaySellerItems = channel.unary_unary(
+                '/marketplace.Market/DisplaySellerItems',
+                request_serializer=task__pb2.DisplaySellerItemsRequest.SerializeToString,
+                response_deserializer=task__pb2.DisplaySellerItemsResponse.FromString,
+                )
 
 
 class MarketServicer(object):
@@ -44,6 +59,24 @@ class MarketServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def UpdateItem(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DeleteItem(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def DisplaySellerItems(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MarketServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -56,6 +89,21 @@ def add_MarketServicer_to_server(servicer, server):
                     servicer.SellItem,
                     request_deserializer=task__pb2.SellItemRequest.FromString,
                     response_serializer=task__pb2.SellItemResponse.SerializeToString,
+            ),
+            'UpdateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.UpdateItem,
+                    request_deserializer=task__pb2.UpdateItemRequest.FromString,
+                    response_serializer=task__pb2.UpdateItemResponse.SerializeToString,
+            ),
+            'DeleteItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.DeleteItem,
+                    request_deserializer=task__pb2.DeleteItemRequest.FromString,
+                    response_serializer=task__pb2.DeleteItemResponse.SerializeToString,
+            ),
+            'DisplaySellerItems': grpc.unary_unary_rpc_method_handler(
+                    servicer.DisplaySellerItems,
+                    request_deserializer=task__pb2.DisplaySellerItemsRequest.FromString,
+                    response_serializer=task__pb2.DisplaySellerItemsResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -99,5 +147,56 @@ class Market(object):
         return grpc.experimental.unary_unary(request, target, '/marketplace.Market/SellItem',
             task__pb2.SellItemRequest.SerializeToString,
             task__pb2.SellItemResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def UpdateItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/marketplace.Market/UpdateItem',
+            task__pb2.UpdateItemRequest.SerializeToString,
+            task__pb2.UpdateItemResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DeleteItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/marketplace.Market/DeleteItem',
+            task__pb2.DeleteItemRequest.SerializeToString,
+            task__pb2.DeleteItemResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def DisplaySellerItems(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/marketplace.Market/DisplaySellerItems',
+            task__pb2.DisplaySellerItemsRequest.SerializeToString,
+            task__pb2.DisplaySellerItemsResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

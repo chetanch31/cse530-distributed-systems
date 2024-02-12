@@ -46,10 +46,9 @@ class Market(task_pb2_grpc.MarketServicer):
             "quantity" : request.quantity,
             "description" : request.description,
             "price" : request.price_per_unit,
-            "uid" : request.seller_uuid
+            "uid" : request.seller_uuid,
+            "rating" : 0
         }
-
-        # self.item_list[item_id] = request
 
         print(self.item_list)
         response = task_pb2.SellItemResponse(
@@ -59,7 +58,121 @@ class Market(task_pb2_grpc.MarketServicer):
             )
         
         return response
+    
+    def UpdateItem(self, request, context):
+        uuid = request.seller_uuid
+        if uuid not in self.seller_list:
+            response = task_pb2.UpdateItemResponse(
+                status = task_pb2.UpdateItemResponse.Status.FAILED,
+                message = "Seller not registered"
+            )
 
+            return response
+        
+        item_id = request.item_id
+        print(f"{self.get_current_time()} Recieved update item {item_id} request from {self.seller_list[uuid]}")
+        if item_id not in self.item_list:
+            response = task_pb2.UpdateItemResponse(
+                status = task_pb2.UpdateItemResponse.Status.FAILED,
+                message = "No item registered with corresponding ID"
+            )
+
+            return response
+
+        if self.item_list[item_id]["uid"] == request.seller_uuid:
+            print("Before:", self.item_list[item_id])
+
+            self.item_list[item_id]["price"] = request.new_price
+            self.item_list[item_id]["quantity"] = request.new_quantity
+        
+            print("After:", self.item_list[item_id])
+
+            response = task_pb2.UpdateItemResponse(
+                status = task_pb2.UpdateItemResponse.SUCCESS,
+                message = "Item updated successfully!"
+            )
+
+            return response
+        else:
+            response = task_pb2.UpdateItemResponse(
+                status = task_pb2.UpdateItemResponse.Status.FAILED,
+                message = "Given item ID not registered with the corresponding UID"
+            )
+            return response
+
+    def DeleteItem(self, request, context):
+        uuid = request.seller_uuid
+        if uuid not in self.seller_list:
+            response = task_pb2.DeleteItemResponse(
+                status=task_pb2.DeleteItemResponse.Status.FAILED,
+                message="Seller not registered"
+            )
+            return response
+        
+        item_id = request.item_id
+        print(f"{self.get_current_time()} Received delete item {item_id} request from {self.seller_list[uuid]}")
+        if item_id not in self.item_list:
+            response = task_pb2.DeleteItemResponse(
+                status=task_pb2.DeleteItemResponse.Status.FAILED,
+                message="No item registered with corresponding ID"
+            )
+            return response
+
+        if self.item_list[item_id]["uid"] == request.seller_uuid:
+            print(f"Deleting item {item_id}")
+            del self.item_list[item_id]
+            response = task_pb2.DeleteItemResponse(
+                status=task_pb2.DeleteItemResponse.Status.SUCCESS,
+                message="Item deleted successfully!"
+            )
+            return response
+        else:
+            response = task_pb2.DeleteItemResponse(
+                status=task_pb2.DeleteItemResponse.Status.FAILED,
+                message="Given item ID not registered with the corresponding UID"
+            )
+            return response
+
+    def DisplaySellerItems(self, request, context):
+        seller_uuid = request.seller_uuid
+        seller_address = request.seller_address
+
+        if seller_uuid not in self.seller_list:
+            response = task_pb2.DisplaySellerItemsResponse(
+                status=task_pb2.DisplaySellerItemsResponse.Status.FAILED,
+                items=[]
+            )
+            return response
+
+        if self.seller_list[seller_uuid] != seller_address:
+            response = task_pb2.DisplaySellerItemsResponse(
+                status=task_pb2.DisplaySellerItemsResponse.Status.FAILED,
+                items=[]
+            )
+            return response
+
+        seller_items = []
+        for item_id, item in self.item_list.items():
+            if item["seller_uuid"] == seller_uuid:
+                seller_item = task_pb2.SellerItem(
+                    item_id=item_id,
+                    price=item["price"],
+                    product_name=item["product_name"],
+                    category=item["category"],
+                    description=item["description"],
+                    quantity_remaining=item["quantity"],
+                    seller_address=item["seller_address"],
+                    rating=item["rating"]
+                )
+                seller_items.append(seller_item)
+
+        response = task_pb2.DisplaySellerItemsResponse(
+            status=task_pb2.DisplaySellerItemsResponse.Status.SUCCESS,
+            items=seller_items
+        )
+        return response
+
+    
     def get_current_time(self):
         now = datetime.now()
         formatted_time = now.strftime("[%d:%m:%Y %H:%M:%S]")
