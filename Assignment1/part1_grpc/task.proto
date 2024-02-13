@@ -127,7 +127,51 @@ message BuyerSearchItemResponse {
     repeated SellerItem items = 3;
 }
 
+message BuyItemRequest {
+    int32 item_id = 1;
+    int32 quantity = 2;
+    string buyer_address = 3;
+}
 
+// Response message for buying an item
+message BuyItemResponse {
+    enum Status {
+        SUCCESS = 0;
+        FAILED = 1;
+    }
+    Status status = 1;
+    string message = 2;
+}
+
+message AddToWishListRequest {
+    int32 item_id = 1;
+    string buyer_address = 2;
+}
+
+message AddToWishListResponse {
+    enum Status {
+        SUCCESS = 0;
+        FAILED = 1;
+    }
+    Status status = 1;
+    string message = 2;
+}
+
+message RateItemRequest {
+    int32 item_id = 1;
+    string buyer_address = 2;
+    int32 rating = 3;
+}
+
+// Response message for rating an item
+message RateItemResponse {
+    enum Status {
+        SUCCESS = 0;
+        FAILED = 1;
+    }
+    Status status = 1;
+    string message = 2;
+}
 // Define Market service
 service Market {
     // RPC methods for sellers
@@ -139,4 +183,7 @@ service Market {
 
     // RPC method for buyers
     rpc SearchItem (BuyerSearchItemRequest) returns (BuyerSearchItemResponse);
+    rpc BuyItem (BuyItemRequest) returns (BuyItemResponse);
+    rpc AddToWishList (AddToWishListRequest) returns (AddToWishListResponse);
+    rpc RateItem(RateItemRequest) returns (RateItemResponse);
 }

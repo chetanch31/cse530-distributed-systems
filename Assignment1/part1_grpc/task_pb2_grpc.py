@@ -45,6 +45,21 @@ class MarketStub(object):
                 request_serializer=task__pb2.BuyerSearchItemRequest.SerializeToString,
                 response_deserializer=task__pb2.BuyerSearchItemResponse.FromString,
                 )
+        self.BuyItem = channel.unary_unary(
+                '/marketplace.Market/BuyItem',
+                request_serializer=task__pb2.BuyItemRequest.SerializeToString,
+                response_deserializer=task__pb2.BuyItemResponse.FromString,
+                )
+        self.AddToWishList = channel.unary_unary(
+                '/marketplace.Market/AddToWishList',
+                request_serializer=task__pb2.AddToWishListRequest.SerializeToString,
+                response_deserializer=task__pb2.AddToWishListResponse.FromString,
+                )
+        self.RateItem = channel.unary_unary(
+                '/marketplace.Market/RateItem',
+                request_serializer=task__pb2.RateItemRequest.SerializeToString,
+                response_deserializer=task__pb2.RateItemResponse.FromString,
+                )
 
 
 class MarketServicer(object):
@@ -89,6 +104,24 @@ class MarketServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def BuyItem(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def AddToWishList(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def RateItem(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_MarketServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -121,6 +154,21 @@ def add_MarketServicer_to_server(servicer, server):
                     servicer.SearchItem,
                     request_deserializer=task__pb2.BuyerSearchItemRequest.FromString,
                     response_serializer=task__pb2.BuyerSearchItemResponse.SerializeToString,
+            ),
+            'BuyItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.BuyItem,
+                    request_deserializer=task__pb2.BuyItemRequest.FromString,
+                    response_serializer=task__pb2.BuyItemResponse.SerializeToString,
+            ),
+            'AddToWishList': grpc.unary_unary_rpc_method_handler(
+                    servicer.AddToWishList,
+                    request_deserializer=task__pb2.AddToWishListRequest.FromString,
+                    response_serializer=task__pb2.AddToWishListResponse.SerializeToString,
+            ),
+            'RateItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.RateItem,
+                    request_deserializer=task__pb2.RateItemRequest.FromString,
+                    response_serializer=task__pb2.RateItemResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -232,5 +280,56 @@ class Market(object):
         return grpc.experimental.unary_unary(request, target, '/marketplace.Market/SearchItem',
             task__pb2.BuyerSearchItemRequest.SerializeToString,
             task__pb2.BuyerSearchItemResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def BuyItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/marketplace.Market/BuyItem',
+            task__pb2.BuyItemRequest.SerializeToString,
+            task__pb2.BuyItemResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def AddToWishList(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/marketplace.Market/AddToWishList',
+            task__pb2.AddToWishListRequest.SerializeToString,
+            task__pb2.AddToWishListResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def RateItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/marketplace.Market/RateItem',
+            task__pb2.RateItemRequest.SerializeToString,
+            task__pb2.RateItemResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

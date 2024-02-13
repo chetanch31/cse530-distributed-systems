@@ -23,7 +23,7 @@ class Buyer:
     def search_item(self):
         request = task_pb2.BuyerSearchItemRequest(
             name = "",
-            category = "2"
+            category = ""
         )
 
         response = self.stub.SearchItem(request)
@@ -35,13 +35,48 @@ class Buyer:
             print(f"{self.get_current_time()} Search failed. Reason: {response.message}")
 
     def buy_item(self):
-        pass
+        request = task_pb2.BuyItemRequest(
+            item_id=1,
+            quantity=5,
+            buyer_address=f"{self.addr}:{self.port}"
+        )
+
+        response = self.stub.BuyItem(request)
+
+        if response.status == task_pb2.BuyItemResponse.Status.SUCCESS:
+            print(f"{self.get_current_time()} SUCCESS: Item purchased successfully!")
+        else:
+            print(f"{self.get_current_time()} FAIL: {response.message}")
+
 
     def add_to_wishlist(self):
-        pass
+        request = task_pb2.AddToWishListRequest(
+            item_id=1,
+            buyer_address=f"{self.addr}:{self.port}"
+        )
+
+        response = self.stub.AddToWishList(request)
+
+        if response.status == task_pb2.AddToWishListResponse.Status.SUCCESS:
+            print(f"{self.get_current_time()} SUCCESS: Item added to wishlist successfully!")
+        else:
+            print(f"{self.get_current_time()} FAIL: {response.message}")
+
 
     def rate_item(self):
-        pass
+        request = task_pb2.RateItemRequest(
+            item_id=2,
+            buyer_address=f"{self.addr}:{self.port}",
+            rating=4
+        )
+
+        response = self.stub.RateItem(request)
+
+        if response.status == task_pb2.RateItemResponse.Status.SUCCESS:
+            print(f"{self.get_current_time()} SUCCESS: Item rated successfully!")
+        else:
+            print(f"{self.get_current_time()} FAIL: {response.message}")
+
 
 
 def main():

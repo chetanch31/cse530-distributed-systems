@@ -9,6 +9,7 @@ class Market(task_pb2_grpc.MarketServicer):
 
     seller_list = {}
     item_list = {}
+    wish_list = {}
 
     def __init__(self, port):
         self.port = port
@@ -47,7 +48,8 @@ class Market(task_pb2_grpc.MarketServicer):
             "description" : request.description,
             "price" : request.price_per_unit,
             "uid" : request.seller_uuid,
-            "rating" : 0
+            "rating" : 0,
+            "rated_by" : []
         }
 
         print(self.item_list)
@@ -207,7 +209,126 @@ class Market(task_pb2_grpc.MarketServicer):
         )
         return response
 
+    def BuyItem(self, request, context):
+        item_id = request.item_id
+        quantity = request.quantity
+        buyer_address = request.buyer_address
+
+        print(f"{self.get_current_time()} Buy request of quantity {quantity} for item ID {item_id} from {buyer_address}")
+        # Check if the item exists
+        if item_id not in self.item_list:
+            response = task_pb2.BuyItemResponse(
+                status=task_pb2.BuyItemResponse.Status.FAILED,
+                message=f"Item with ID {item_id} not found"
+            )
+            return response
+
+        # Check if there is enough quantity available
+        if self.item_list[item_id]["quantity"] < quantity:
+            response = task_pb2.BuyItemResponse(
+                status=task_pb2.BuyItemResponse.Status.FAILED,
+                message=f"Not enough quantity available for item with ID {item_id}"
+            )
+            return response
+
+        # Update item quantity after purchase
+        self.item_list[item_id]["quantity"] -= quantity
+
+        # Trigger notification to the seller
+        seller_uuid = self.item_list[item_id]["uid"]
+        seller_address = self.seller_list.get(seller_uuid, "Unknown")
+        seller_notification = f"Buy request {quantity} of item {item_id}, from {buyer_address}"
+        print(f"{self.get_current_time()} Seller notification: {seller_notification}")
+
+        # Prepare the response
+        response = task_pb2.BuyItemResponse(
+            status=task_pb2.BuyItemResponse.Status.SUCCESS,
+            message="Item purchased successfully!"
+        )
+        return response
+
+    def AddToWishList(self, request, context):
+        item_id = request.item_id
+        buyer_address = request.buyer_address
+
+        print(f"{self.get_current_time()} Wishlist request of item {item_id} from {buyer_address}")
+        # Check if the item ID exists in the item list
+        if item_id not in self.item_list:
+            response = task_pb2.AddToWishListResponse(
+                status=task_pb2.AddToWishListResponse.Status.FAILED,
+                message=f"Item with ID {item_id} does not exist"
+            )
+            return response
         
+        if self.wish_list.get(item_id) and buyer_address in self.wish_list[item_id]:
+            response = task_pb2.AddToWishListResponse(
+                status=task_pb2.AddToWishListResponse.Status.FAILED,
+                message=f"Item with ID {item_id} is already in the wishlist for buyer at {buyer_address}"
+            )
+            return response
+        # Add the buyer's address to the wishlist for the item
+        if item_id in self.wish_list:
+            self.wish_list[item_id].append(buyer_address)
+        else:
+            self.wish_list[item_id] = [buyer_address]
+
+        # Send a success response
+        response = task_pb2.AddToWishListResponse(
+            status=task_pb2.AddToWishListResponse.Status.SUCCESS,
+            message=f"Item with ID {item_id} added to wishlist for buyer at {buyer_address}"
+        )
+
+        print(self.wish_list)
+        return response
+    
+    def RateItem(self, request, context):
+        item_id = request.item_id
+        buyer_address = request.buyer_address
+        rating = request.rating
+
+        print(f"{self.get_current_time()} {buyer_address} rated item {item_id} with {rating} stars.")
+
+        # Check if the item ID exists in the item list
+        if item_id not in self.item_list:
+            response = task_pb2.RateItemResponse(
+                status=task_pb2.RateItemResponse.Status.FAILED,
+                message=f"Item with ID {item_id} does not exist"
+            )
+            return response
+
+        # Check if the rating is valid (between 1 and 5)
+        if rating < 1 or rating > 5:
+            response = task_pb2.RateItemResponse(
+                status=task_pb2.RateItemResponse.Status.FAILED,
+                message="Rating must be between 1 and 5"
+            )
+            return response
+
+        # Check if the buyer has already rated this item
+        if buyer_address in self.item_list[item_id]["rated_by"]:
+            response = task_pb2.RateItemResponse(
+                status=task_pb2.RateItemResponse.Status.FAILED,
+                message="You have already rated this item"
+            )
+            return response
+
+        # Update the item's rating and add the buyer's address to the list of rated_by
+        current_rating = self.item_list[item_id]["rating"]
+        current_count = len(self.item_list[item_id]["rated_by"])
+        new_rating = ((current_rating * current_count) + rating) / (current_count + 1)
+        self.item_list[item_id]["rating"] = new_rating
+
+        self.item_list[item_id]["rated_by"].append(buyer_address)
+
+        # Send a success response
+        response = task_pb2.RateItemResponse(
+            status=task_pb2.RateItemResponse.Status.SUCCESS,
+            message="Item rated successfully!"
+        )
+
+        print(self.item_list[item_id])
+        return response
+    
     def get_current_time(self):
         now = datetime.now()
         formatted_time = now.strftime("[%d:%m:%Y %H:%M:%S]")
