@@ -108,7 +108,8 @@ message DisplaySellerItemsResponse {
         FAILED = 1;
     }
     Status status = 1;
-    repeated SellerItem items = 2;
+    string message = 2;
+    repeated SellerItem items = 3;
 }
 // Define Market service
 service Market {

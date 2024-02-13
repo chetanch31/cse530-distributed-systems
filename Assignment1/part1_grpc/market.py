@@ -138,41 +138,35 @@ class Market(task_pb2_grpc.MarketServicer):
         seller_address = request.seller_address
 
         if seller_uuid not in self.seller_list:
-            response = task_pb2.DisplaySellerItemsResponse(
-                status=task_pb2.DisplaySellerItemsResponse.Status.FAILED,
-                items=[]
-            )
-            return response
-
-        if self.seller_list[seller_uuid] != seller_address:
-            response = task_pb2.DisplaySellerItemsResponse(
-                status=task_pb2.DisplaySellerItemsResponse.Status.FAILED,
-                items=[]
-            )
-            return response
+            print("Seller not registered")
 
         seller_items = []
+        
         for item_id, item in self.item_list.items():
-            if item["seller_uuid"] == seller_uuid:
+
+            if item["uid"] == seller_uuid:
                 seller_item = task_pb2.SellerItem(
-                    item_id=item_id,
-                    price=item["price"],
-                    product_name=item["product_name"],
-                    category=item["category"],
-                    description=item["description"],
-                    quantity_remaining=item["quantity"],
-                    seller_address=item["seller_address"],
-                    rating=item["rating"]
+                    item_id = item_id,
+                    price = item["price"],
+                    product_name = item["name"],
+                    category = str(item["category"]),
+                    description = item["description"],
+                    quantity_remaining = item["quantity"],
+                    seller_address = self.seller_list[seller_uuid],
+                    rating = item["rating"]
                 )
                 seller_items.append(seller_item)
 
+        
+        print("Printing seller items", seller_items)
         response = task_pb2.DisplaySellerItemsResponse(
             status=task_pb2.DisplaySellerItemsResponse.Status.SUCCESS,
+            message="Completed successfully!",
             items=seller_items
         )
+        
         return response
 
-    
     def get_current_time(self):
         now = datetime.now()
         formatted_time = now.strftime("[%d:%m:%Y %H:%M:%S]")

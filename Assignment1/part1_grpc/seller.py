@@ -98,7 +98,7 @@ class Seller:
                 print(f"Rating: {item.rating}")
                 print()
         else:
-            print(f"{self.get_current_time()} Failed! Reason: {response.status}")
+            print(f"{self.get_current_time()} Failed! Reason: {response.items}")
 
 
 
@@ -120,7 +120,7 @@ def main():
         print("4. Delete Item")
         print("5. Display Seller Items")
         print("-"*50)
-        task = input("What would you like to do (enter 1 or 2)?: ")
+        task = input("What would you like to do?: ")
 
         if task == "1":
             seller.register_seller()
