@@ -40,6 +40,11 @@ class MarketStub(object):
                 request_serializer=task__pb2.DisplaySellerItemsRequest.SerializeToString,
                 response_deserializer=task__pb2.DisplaySellerItemsResponse.FromString,
                 )
+        self.SearchItem = channel.unary_unary(
+                '/marketplace.Market/SearchItem',
+                request_serializer=task__pb2.BuyerSearchItemRequest.SerializeToString,
+                response_deserializer=task__pb2.BuyerSearchItemResponse.FromString,
+                )
 
 
 class MarketServicer(object):
@@ -47,7 +52,7 @@ class MarketServicer(object):
     """
 
     def RegisterSeller(self, request, context):
-        """RPC method for registering a seller
+        """RPC methods for sellers
         """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -73,6 +78,13 @@ class MarketServicer(object):
 
     def DisplaySellerItems(self, request, context):
         """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
+    def SearchItem(self, request, context):
+        """RPC method for buyers
+        """
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
@@ -104,6 +116,11 @@ def add_MarketServicer_to_server(servicer, server):
                     servicer.DisplaySellerItems,
                     request_deserializer=task__pb2.DisplaySellerItemsRequest.FromString,
                     response_serializer=task__pb2.DisplaySellerItemsResponse.SerializeToString,
+            ),
+            'SearchItem': grpc.unary_unary_rpc_method_handler(
+                    servicer.SearchItem,
+                    request_deserializer=task__pb2.BuyerSearchItemRequest.FromString,
+                    response_serializer=task__pb2.BuyerSearchItemResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -198,5 +215,22 @@ class Market(object):
         return grpc.experimental.unary_unary(request, target, '/marketplace.Market/DisplaySellerItems',
             task__pb2.DisplaySellerItemsRequest.SerializeToString,
             task__pb2.DisplaySellerItemsResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def SearchItem(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/marketplace.Market/SearchItem',
+            task__pb2.BuyerSearchItemRequest.SerializeToString,
+            task__pb2.BuyerSearchItemResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

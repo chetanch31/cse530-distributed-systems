@@ -167,6 +167,47 @@ class Market(task_pb2_grpc.MarketServicer):
         
         return response
 
+    def SearchItem(self, request, context):
+        name, category = request.name, request.category
+        print(f"{self.get_current_time()} Search request for item name: {name}, category: {category}")
+
+        matched_items = []
+
+        for item_id, item in self.item_list.items():
+            if (not name or name.lower() in item["name"].lower()) and \
+            (not category or str(category) == "ANY" or category == item["category"]):
+                seller_address = self.seller_list.get(item["uid"], "Unknown")
+                seller_item = task_pb2.SellerItem(
+                    item_id=item_id,
+                    price=item["price"],
+                    product_name=item["name"],
+                    category=str(item["category"]),
+                    description=item["description"],
+                    quantity_remaining=item["quantity"],
+                    seller_address=seller_address,
+                    rating=item["rating"]
+                )
+                matched_items.append(seller_item)
+        
+        print("Matched item list")
+        print(matched_items)
+
+        if len(matched_items) != 0:
+            response = task_pb2.BuyerSearchItemResponse(
+                status=task_pb2.BuyerSearchItemResponse.Status.SUCCESS,
+                message="Search completed successfully!",
+                items=matched_items
+            )
+            return response
+        
+        response = task_pb2.BuyerSearchItemResponse(
+            status=task_pb2.BuyerSearchItemResponse.Status.FAILED,
+            message="No results found",
+            items=matched_items
+        )
+        return response
+
+        
     def get_current_time(self):
         now = datetime.now()
         formatted_time = now.strftime("[%d:%m:%Y %H:%M:%S]")

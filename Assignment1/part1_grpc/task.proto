@@ -111,12 +111,32 @@ message DisplaySellerItemsResponse {
     string message = 2;
     repeated SellerItem items = 3;
 }
+
+message BuyerSearchItemRequest {
+    string name = 1;
+    string category = 2; 
+}
+
+message BuyerSearchItemResponse {
+    enum Status {
+        SUCCESS = 0;
+        FAILED = 1;
+    }
+    Status status = 1;
+    string message = 2;
+    repeated SellerItem items = 3;
+}
+
+
 // Define Market service
 service Market {
-    // RPC method for registering a seller
+    // RPC methods for sellers
     rpc RegisterSeller (RegisterSellerRequest) returns (RegisterSellerResponse);
     rpc SellItem (SellItemRequest) returns (SellItemResponse);
     rpc UpdateItem (UpdateItemRequest) returns (UpdateItemResponse);
     rpc DeleteItem (DeleteItemRequest) returns (DeleteItemResponse);
     rpc DisplaySellerItems (DisplaySellerItemsRequest) returns (DisplaySellerItemsResponse);
+
+    // RPC method for buyers
+    rpc SearchItem (BuyerSearchItemRequest) returns (BuyerSearchItemResponse);
 }
