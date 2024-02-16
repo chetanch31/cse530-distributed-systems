@@ -2,9 +2,9 @@ import zmq
 import socket
 
 # Constants
-MSG_APP_IP = "localhost"
+MSG_APP_IP = "34.133.227.248"
 MSG_APP_PORT = 5556
-GROUP_IP = "localhost"
+GROUP_IP = "10.128.0.3"
 # GROUP_PORT = 5557
 
 class Group:

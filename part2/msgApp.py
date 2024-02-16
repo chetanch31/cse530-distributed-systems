@@ -6,7 +6,7 @@ MSG_APP_PORT = 5556
 def main():
     context = zmq.Context()
     socket = context.socket(zmq.REP)
-    socket.bind("tcp://*:" + str(MSG_APP_PORT))
+    socket.bind("10.128.0.2" + str(MSG_APP_PORT))
 
     groups = {}  # Dictionary to store group names and IP addresses
     
