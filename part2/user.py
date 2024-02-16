@@ -9,7 +9,6 @@ GROUP_PORT=5557
 
 #things / cases pending to add in this file
 #users to have unique id's
-#users to store which groups they are currently a part of, and they can send messages to only those groups.
 
 class User:
     

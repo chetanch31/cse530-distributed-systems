@@ -1,18 +1,14 @@
 import zmq
+import socket
 
 # Constants
 MSG_APP_IP = "localhost"
 MSG_APP_PORT = 5556
 GROUP_IP = "localhost"
-GROUP_PORT = 5557
-# FIRST_GROUP_PORT=5560
-
-# remaining things to add in this file
+# GROUP_PORT = 5557
 
 class Group:
-    
-    # last_assigned_port = FIRST_GROUP_PORT
-    
+        
     def __init__(self, name, port=None):
         self.name = name
         self.port = port
@@ -25,11 +21,11 @@ class Group:
         #internalIP address of the group server
         self.socket.setsockopt(zmq.RCVTIMEO, 1000000)  # Set timeout for receive operation
         
-    @classmethod
-    def assign_port(cls):
-        cls.last_assigned_port += 1
-        print("Last assigned port:", cls.last_assigned_port)
-        return cls.last_assigned_port
+    # @classmethod
+    # def assign_port(cls):
+    #     cls.last_assigned_port += 1
+    #     print("Last assigned port:", cls.last_assigned_port)
+    #     return cls.last_assigned_port
 
     def add_user(self, user_uuid):
         self.users[user_uuid] = True  # You can use a boolean value to represent user membership
@@ -79,17 +75,6 @@ class Group:
     def handle_join_request(self,message):
         
         try:
-            # # message = self.socket.recv_string()
-            # print("Checkpoint 1: Received join request:", message)
-            # # Split the received message to get group name, user UUID, and user name
-            # group_port, user_uuid, user_name = message.split()
-            
-            # # Add user to the group
-            # self.add_user(user_uuid)
-            
-            # # Send response back to the user
-            # self.socket.send_string(f"SUCCESS: User {user_name} joined the group on port {group_port}")
-            
             # Split the received message to get group port, user UUID, and user name
             parts = message.split(maxsplit=2)
             if len(parts) == 3:
@@ -157,12 +142,42 @@ class Group:
             print("Error in retrieving messages:", str(e))
             self.socket.send_string("FAIL: Error in retrieving messages")
 
+    def is_port_in_use(port):
+        # Create a new socket
+        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        # Set a short timeout to speed up the check
+        s.settimeout(1)
+    
+        try:
+            # Attempt to bind the socket to the specified port
+            s.bind(('localhost', int(port)))
+        except OSError as e:
+            # If binding fails with "Address already in use" error,
+            # it means the port is already in use
+            if e.errno == socket.errno.EADDRINUSE:
+                return True
+            else:
+                # If it fails for some other reason, it's likely an unexpected error
+                print("Unexpected error:", e)
+        finally:
+            # Close the socket
+            s.close()
+        
+        # If the binding was successful, the port is not in use
+        return False
+
 def main():
     
     # Create a group server instance
     group_name = input("Enter group name: ")
     # group_port = GROUP_PORT  # Assuming the group server always listens on the same port
+    
     group_port = input("Enter group port: ")
+    #if group_port in use then ask user to enter another port
+    while Group.is_port_in_use(group_port):
+        print("Port is already in use, please enter another port")
+        group_port = input("Enter group port: ")        
+   
     group = Group(group_name, group_port)
     
     group.register_group(MSG_APP_IP,MSG_APP_PORT)
