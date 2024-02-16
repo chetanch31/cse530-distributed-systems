@@ -10,16 +10,16 @@ class Buyer(task_pb2_grpc.MarketServicer):
     
     def __init__(self, port):
         self.port = port
-        self.addr = "localhost"
+        self.addr = "10.128.0.4"
         self.unique_id = str(uuid.uuid1())
         self.item_list = {}
-        self.channel = grpc.insecure_channel("localhost:50051")
+        self.channel = grpc.insecure_channel("34.133.227.248:50051")
         self.stub = task_pb2_grpc.MarketStub(self.channel)
 
     def serve(self):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         task_pb2_grpc.add_MarketServicer_to_server(self, server=server)
-        server.add_insecure_port(f"localhost:{self.port}")
+        server.add_insecure_port(f"[::]:{self.port}")
         server.start()
         print(f"{self.get_current_time()} Notification server for buyer started. Listening on port {self.port}")
         self.server = server

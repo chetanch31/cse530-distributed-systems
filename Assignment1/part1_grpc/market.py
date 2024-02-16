@@ -385,7 +385,7 @@ class Market(task_pb2_grpc.MarketServicer):
     def serve(self):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         task_pb2_grpc.add_MarketServicer_to_server(self, server=server)
-        server.add_insecure_port(f"localhost:{self.port}")
+        server.add_insecure_port(f"10.128.0.2:{self.port}")
         server.start()
         print(f"{self.get_current_time()} Market server started. Listening on port {self.port}")
         server.wait_for_termination()

@@ -10,15 +10,15 @@ class Seller(task_pb2_grpc.MarketServicer):
 
     def __init__(self, port):
         self.port = port
-        self.addr = "localhost"
+        self.addr = "10.128.0.3"
         self.unique_id = str(uuid.uuid1())
         self.item_list = {}
-        self.channel = grpc.insecure_channel("localhost:50051")
+        self.channel = grpc.insecure_channel("34.133.227.248:50051")
         self.stub = task_pb2_grpc.MarketStub(self.channel)
 
     def register_seller(self):
         request = task_pb2.RegisterSellerRequest(
-            ip_port=f"localhost:{self.port}",
+            ip_port=f"{self.addr}:{self.port}",
             uuid=self.unique_id
         )
         response = self.stub.RegisterSeller(request)
