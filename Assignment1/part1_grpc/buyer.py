@@ -3,8 +3,9 @@ import grpc
 import task_pb2
 import task_pb2_grpc
 from datetime import datetime
+from concurrent import futures
 
-class Buyer:
+class Buyer(task_pb2_grpc.MarketServicer):
     
     def __init__(self, port):
         self.port = port
@@ -14,7 +15,29 @@ class Buyer:
         self.channel = grpc.insecure_channel("localhost:50051")
         self.stub = task_pb2_grpc.MarketStub(self.channel)
 
+    def serve(self):
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        task_pb2_grpc.add_MarketServicer_to_server(self, server=server)
+        server.add_insecure_port(f"localhost:{self.port}")
+        server.start()
+        print(f"{self.get_current_time()} Notification server for buyer started. Listening on port {self.port}")
+        self.server = server
+
+    def stop_server(self):
+        self.server.stop(None)
     
+    def SendNotification(self, request, context):
+        message = request.message
+        item = request.item
+        print()
+        print(message)
+        print(item)
+        response = task_pb2.NotificationResponse(
+            status = "Recieved"
+        )
+        print_menu()
+        return response
+
     def get_current_time(self):
         now = datetime.now()
         formatted_time = now.strftime("[%d:%m:%Y %H:%M:%S]")
@@ -77,21 +100,24 @@ class Buyer:
         else:
             print(f"{self.get_current_time()} FAIL: {response.message}")
 
-
+def print_menu():
+    print("-"*50)
+    print("1. Search Item")
+    print("2. Buy Item")
+    print("3. Add to Wishlist")
+    print("4. Rate Item")
+    print("-"*50)
+    print("What would you like to do?")
+    print("-"*50)
 
 def main():
-    port = 50053
+    port = 50054
     buyer = Buyer(port=port)
+    buyer.serve()
 
     while True:
-        print("-"*50)
-        print("1. Search Item")
-        print("2. Buy Item")
-        print("3. Add to Wishlist")
-        print("4. Rate Item")
-        print("-"*50)
-        task = input("What would you like to do?: ")
-
+        print_menu()
+        task = input("")
         if task == "1":
             buyer.search_item()
         elif task == "2":

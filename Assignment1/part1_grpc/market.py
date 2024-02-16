@@ -94,6 +94,30 @@ class Market(task_pb2_grpc.MarketServicer):
                 message = "Item updated successfully!"
             )
 
+            updated_item = self.item_list[item_id]
+            send_item = task_pb2.SellerItem(
+                item_id=item_id,
+                price=updated_item["price"],
+                product_name=updated_item["name"],
+                category=str(updated_item["category"]),
+                description=updated_item["description"],
+                quantity_remaining=updated_item["quantity"],
+                seller_address=self.seller_list.get(request.seller_uuid, "Unknown"),
+                rating=updated_item["rating"]
+            )
+            message = f"\n{self.get_current_time()} Item in your wishlist has been updated. {item_id}"
+            print(self.wish_list[item_id])
+            
+            for buyer_addr in self.wish_list[item_id]:
+                with grpc.insecure_channel(buyer_addr) as channel:
+                    stub = task_pb2_grpc.MarketStub(channel)
+                    request = task_pb2.NotificationRequest(
+                        message = message,
+                        item = send_item
+                    )
+                    reply = stub.SendNotification(request)
+                    print(reply)
+
             return response
         else:
             response = task_pb2.UpdateItemResponse(
@@ -241,6 +265,30 @@ class Market(task_pb2_grpc.MarketServicer):
         print(f"{self.get_current_time()} Seller notification: {seller_notification}")
 
         # Prepare the response
+
+        with grpc.insecure_channel(seller_address) as channel:
+            stub = task_pb2_grpc.MarketStub(channel)
+            item = self.item_list[item_id]
+            send_item = task_pb2.SellerItem(
+                    item_id=item_id,
+                    price=item["price"],
+                    product_name=item["name"],
+                    category=str(item["category"]),
+                    description=item["description"],
+                    quantity_remaining=item["quantity"],
+                    seller_address=seller_address,
+                    rating=item["rating"]
+                )
+            message = f"{self.get_current_time()} Item sold to buyer {buyer_address}"
+
+            req = task_pb2.NotificationRequest(
+                message = message,
+                item = send_item
+            )
+            
+            reply = stub.SendNotification(req)
+            print(reply)
+
         response = task_pb2.BuyItemResponse(
             status=task_pb2.BuyItemResponse.Status.SUCCESS,
             message="Item purchased successfully!"

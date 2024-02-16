@@ -3,8 +3,9 @@ import grpc
 import task_pb2
 import task_pb2_grpc
 from datetime import datetime
+from concurrent import futures
 
-class Seller:
+class Seller(task_pb2_grpc.MarketServicer):
 
     def __init__(self, port):
         self.port = port
@@ -24,6 +25,30 @@ class Seller:
             print(f"{self.get_current_time()} Seller registration successful!")
         else:
             print(f"{self.get_current_time()} Seller registration failed!")
+
+    def SendNotification(self, request, context):
+        message = request.message
+        item = request.item
+        print()
+        print(message)
+        print(item)
+        response = task_pb2.NotificationResponse(
+            status = "Recieved"
+        )
+        print_menu()
+        return response
+
+    def serve(self):
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        task_pb2_grpc.add_MarketServicer_to_server(self, server=server)
+        server.add_insecure_port(f"localhost:{self.port}")
+        server.start()
+        print(f"{self.get_current_time()} Notification server for seller started. Listening on port {self.port}")
+        self.server = server
+
+    def stop_server(self):
+        self.server.stop(None)
+    
 
     def sell_item(self):
 
@@ -107,21 +132,25 @@ class Seller:
         formatted_time = now.strftime("[%d:%m:%Y %H:%M:%S]")
         return formatted_time
 
+def print_menu():
+    print("-"*50)
+    print("1. Register Seller")
+    print("2. Sell Item")
+    print("3. Update Item")
+    print("4. Delete Item")
+    print("5. Display Seller Items")
+    print("-"*50)
+    print("What would you like to do?:")
+    print("-"*50)
 
 def main():
     port = 50052
     seller = Seller(port=port)
+    seller.serve()
 
     while True:
-        print("-"*50)
-        print("1. Register Seller")
-        print("2. Sell Item")
-        print("3. Update Item")
-        print("4. Delete Item")
-        print("5. Display Seller Items")
-        print("-"*50)
-        task = input("What would you like to do?: ")
-
+        print_menu()
+        task = input()
         if task == "1":
             seller.register_seller()
         elif task == "2":

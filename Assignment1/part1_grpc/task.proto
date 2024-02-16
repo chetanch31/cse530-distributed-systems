@@ -172,6 +172,15 @@ message RateItemResponse {
     Status status = 1;
     string message = 2;
 }
+
+message NotificationRequest {
+    string message = 1;
+    SellerItem item = 2;
+}
+  
+message NotificationResponse {
+    string status = 1;
+}
 // Define Market service
 service Market {
     // RPC methods for sellers
@@ -186,4 +195,5 @@ service Market {
     rpc BuyItem (BuyItemRequest) returns (BuyItemResponse);
     rpc AddToWishList (AddToWishListRequest) returns (AddToWishListResponse);
     rpc RateItem(RateItemRequest) returns (RateItemResponse);
+    rpc SendNotification(NotificationRequest) returns (NotificationResponse);
 }
