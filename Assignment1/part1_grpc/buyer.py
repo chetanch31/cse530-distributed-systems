@@ -4,6 +4,7 @@ import task_pb2
 import task_pb2_grpc
 from datetime import datetime
 from concurrent import futures
+import argparse
 
 class Buyer(task_pb2_grpc.MarketServicer):
     
@@ -44,9 +45,12 @@ class Buyer(task_pb2_grpc.MarketServicer):
         return formatted_time
 
     def search_item(self):
+        name = input("Enter the item name (leave blank to skip): ")
+        category = input("Enter the item category (0 for Electronics, 1 for Fashion, 2 for Others): ")
+        
         request = task_pb2.BuyerSearchItemRequest(
-            name = "",
-            category = ""
+            name=name,
+            category=category
         )
 
         response = self.stub.SearchItem(request)
@@ -57,10 +61,14 @@ class Buyer(task_pb2_grpc.MarketServicer):
         else:
             print(f"{self.get_current_time()} Search failed. Reason: {response.message}")
 
+
     def buy_item(self):
+        item_id = int(input("Enter the item ID: "))
+        quantity = int(input("Enter the quantity: "))
+        
         request = task_pb2.BuyItemRequest(
-            item_id=1,
-            quantity=5,
+            item_id=item_id,
+            quantity=quantity,
             buyer_address=f"{self.addr}:{self.port}"
         )
 
@@ -72,9 +80,11 @@ class Buyer(task_pb2_grpc.MarketServicer):
             print(f"{self.get_current_time()} FAIL: {response.message}")
 
 
+
     def add_to_wishlist(self):
+        item_id = int(input("Enter item ID you want to wishlist"))
         request = task_pb2.AddToWishListRequest(
-            item_id=1,
+            item_id=item_id,
             buyer_address=f"{self.addr}:{self.port}"
         )
 
@@ -87,10 +97,12 @@ class Buyer(task_pb2_grpc.MarketServicer):
 
 
     def rate_item(self):
+        item_id = int(input("Enter item ID you want to wishlist: "))
+        rating = int(input("Enter rating (1-5): "))
         request = task_pb2.RateItemRequest(
-            item_id=2,
+            item_id=item_id,
             buyer_address=f"{self.addr}:{self.port}",
-            rating=4
+            rating=rating
         )
 
         response = self.stub.RateItem(request)
@@ -111,7 +123,12 @@ def print_menu():
     print("-"*50)
 
 def main():
-    port = 50054
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--port", help="Add port")
+    
+    args = parser.parse_args()
+
+    port = args.port 
     buyer = Buyer(port=port)
     buyer.serve()
 

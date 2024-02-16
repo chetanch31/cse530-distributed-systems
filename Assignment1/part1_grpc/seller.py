@@ -4,6 +4,7 @@ import task_pb2
 import task_pb2_grpc
 from datetime import datetime
 from concurrent import futures
+import argparse
 
 class Seller(task_pb2_grpc.MarketServicer):
 
@@ -51,18 +52,38 @@ class Seller(task_pb2_grpc.MarketServicer):
     
 
     def sell_item(self):
-
-        # TODO take request input from the user
+        print("Enter item details:")
+        product_name = input("Product Name: ")
+        
+        # Provide a list of available categories
+        print("Select category:")
+        print("0. Electronics")
+        print("1. Fashion")
+        print("2. Others")
+        category_input = input("Enter category number: ")
+        
+        # Convert the category input to the corresponding enum value
+        category_map = {
+            "0": task_pb2.ProductCategory.ELECTRONICS,
+            "1": task_pb2.ProductCategory.FASHION,
+            "2": task_pb2.ProductCategory.OTHERS
+        }
+        category = category_map.get(category_input, task_pb2.ProductCategory.OTHERS)
+        
+        quantity = int(input("Quantity: "))
+        description = input("Description: ")
+        price_per_unit = float(input("Price per Unit: "))
 
         request = task_pb2.SellItemRequest(
-            product_name="Smartphone",
-            category=task_pb2.ProductCategory.ELECTRONICS,
-            quantity=10,
-            description="A high-quality smartphone",
+            product_name=product_name,
+            category=category,
+            quantity=quantity,
+            description=description,
             seller_address=self.addr,
             seller_uuid=self.unique_id,
-            price_per_unit=500.0
+            price_per_unit=price_per_unit
         )
+
         response = self.stub.SellItem(request)
         if response.status == task_pb2.SellItemResponse.Status.SUCCESS:
             print(f"{self.get_current_time()} Success! Item ID: {response.item_id}")
@@ -70,14 +91,18 @@ class Seller(task_pb2_grpc.MarketServicer):
         else:
             print(f"{self.get_current_time()} Failed! Reason: {response.message}")
 
+
     def update_item(self):
-        # TODO update request to take input from user
+        item_id = int(input("Enter Item ID to update: "))
+        new_price = float(input("Enter New Price: "))
+        new_quantity = int(input("Enter New Quantity: "))
+        
         request = task_pb2.UpdateItemRequest(
-            item_id = 1,
-            new_price = 2000,
-            new_quantity = 20,
-            seller_address = self.addr,
-            seller_uuid = self.unique_id
+            item_id=item_id,
+            new_price=new_price,
+            new_quantity=new_quantity,
+            seller_address=self.addr,
+            seller_uuid=self.unique_id
         )
         
         response = self.stub.UpdateItem(request)
@@ -87,8 +112,9 @@ class Seller(task_pb2_grpc.MarketServicer):
         else:
             print(f"{self.get_current_time()} Failed! Reason: {response.message}")
 
+
     def delete_item(self):
-        item_id = 2
+        item_id = int(input("Enter item id to delete"))
         request = task_pb2.DeleteItemRequest(
             seller_address=self.addr,
             seller_uuid=self.unique_id,
@@ -144,7 +170,12 @@ def print_menu():
     print("-"*50)
 
 def main():
-    port = 50052
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--port", help="Add port")
+    
+    args = parser.parse_args()
+
+    port = args.port
     seller = Seller(port=port)
     seller.serve()
 
