@@ -52,7 +52,7 @@ class Market(task_pb2_grpc.MarketServicer):
             "rated_by" : []
         }
 
-        print(self.item_list)
+        # print(self.item_list)
         response = task_pb2.SellItemResponse(
                 status=task_pb2.SellItemResponse.Status.SUCCESS,
                 message = f"Item added successfully with id {item_id}",
@@ -82,12 +82,12 @@ class Market(task_pb2_grpc.MarketServicer):
             return response
 
         if self.item_list[item_id]["uid"] == request.seller_uuid:
-            print("Before:", self.item_list[item_id])
+            # print("Before:", self.item_list[item_id])
 
             self.item_list[item_id]["price"] = request.new_price
             self.item_list[item_id]["quantity"] = request.new_quantity
         
-            print("After:", self.item_list[item_id])
+            # print("After:", self.item_list[item_id])
 
             response = task_pb2.UpdateItemResponse(
                 status = task_pb2.UpdateItemResponse.SUCCESS,
@@ -106,7 +106,7 @@ class Market(task_pb2_grpc.MarketServicer):
                 rating=updated_item["rating"]
             )
             message = f"\n{self.get_current_time()} Item in your wishlist has been updated. {item_id}"
-            print(self.wish_list[item_id])
+            # print(self.wish_list[item_id])
             
             for buyer_addr in self.wish_list[item_id]:
                 with grpc.insecure_channel(buyer_addr) as channel:
@@ -145,7 +145,7 @@ class Market(task_pb2_grpc.MarketServicer):
             return response
 
         if self.item_list[item_id]["uid"] == request.seller_uuid:
-            print(f"Deleting item {item_id}")
+            print(f"{self.get_current_time()} Deleting item {item_id}")
             del self.item_list[item_id]
             response = task_pb2.DeleteItemResponse(
                 status=task_pb2.DeleteItemResponse.Status.SUCCESS,
@@ -164,7 +164,7 @@ class Market(task_pb2_grpc.MarketServicer):
         seller_address = request.seller_address
 
         if seller_uuid not in self.seller_list:
-            print("Seller not registered")
+            print(f"{self.get_current_time()} Seller not registered")
 
         seller_items = []
         
@@ -184,7 +184,7 @@ class Market(task_pb2_grpc.MarketServicer):
                 seller_items.append(seller_item)
 
         
-        print("Printing seller items", seller_items)
+        # print("Printing seller items", seller_items)
         response = task_pb2.DisplaySellerItemsResponse(
             status=task_pb2.DisplaySellerItemsResponse.Status.SUCCESS,
             message="Completed successfully!",
@@ -215,8 +215,8 @@ class Market(task_pb2_grpc.MarketServicer):
                 )
                 matched_items.append(seller_item)
         
-        print("Matched item list")
-        print(matched_items)
+        # print("Matched item list")
+        # print(matched_items)
 
         if len(matched_items) != 0:
             response = task_pb2.BuyerSearchItemResponse(
@@ -326,7 +326,7 @@ class Market(task_pb2_grpc.MarketServicer):
             message=f"Item with ID {item_id} added to wishlist for buyer at {buyer_address}"
         )
 
-        print(self.wish_list)
+        # print(self.wish_list)
         return response
     
     def RateItem(self, request, context):
@@ -374,7 +374,7 @@ class Market(task_pb2_grpc.MarketServicer):
             message="Item rated successfully!"
         )
 
-        print(self.item_list[item_id])
+        # print(self.item_list[item_id])
         return response
     
     def get_current_time(self):
