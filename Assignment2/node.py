@@ -6,7 +6,7 @@ from threading import Thread
 
 class RaftNode:
     def __init__(self, node_id, peer_nodes):
-        RaftNode.node_count += 1
+        self.RaftNode.node_count += 1
         self.node_id = node_id
         self.peer_nodes = peer_nodes
         self.state = "follower"
@@ -81,13 +81,14 @@ class RaftNode:
                 pass
 
     def receive_vote_request(self, term, candidate_id):
-        # Follower's response to a vote request from a candidate
-        if term > self.current_term:
-            self.current_term = term
-            self.state = "follower"
-            self.voted_for = None
-        if self.voted_for is None or self.voted_for == candidate_id:
-            return True
+        # # Follower's response to a vote request from a candidate
+        # # does it compare the candidate's term with its own term?
+        # if term > self.current_term:
+        #     self.current_term = term
+        #     self.state = "follower"
+        #     self.voted_for = None
+        # if self.voted_for is None or self.voted_for == candidate_id:
+        #     return True
         return False
 
     def start_election_timer(self):
@@ -121,6 +122,7 @@ class RaftNode:
     def receive_append_entries(self, term, leader_id):
         # Follower's response to append entries from the leader
         pass
+
 
 if __name__ == "__main__":
     # Define peer nodes (replace with actual node instances)
