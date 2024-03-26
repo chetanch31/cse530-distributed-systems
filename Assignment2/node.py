@@ -1,12 +1,13 @@
 import random
+import threading
 import time
 from threading import Thread
 import os
 
 # Define gRPC communication here (not implemented in this code snippet)
-
+node_count = 0 
 class RaftNode:
-    node_count = 0  # Class attribute to keep track of node count
+     # Class attribute to keep track of node count
 
     def __init__(self, node_id, peer_nodes):
         RaftNode.node_count = len(peer_nodes)+1
@@ -22,8 +23,10 @@ class RaftNode:
         self.heartbeat_timeout = 1  # Heartbeat timeout (in seconds)
         self.lease_duration = 7  # Lease duration (in seconds)
         self.leader_id = None
-        self.election_timer = self.generate_random_float
+        self.election_timer = self.generate_random_float()
         self.heartbeat_timer = None
+        self.hearbeat_detection = False
+        self.x=0
 
         print(f"Node {self.node_id} created.")
 
@@ -33,10 +36,15 @@ class RaftNode:
 
     def run(self):
         print(f"Node {self.node_id} is running and active.")
+        
+        #ans=True
+        Thread(target=self.hearbeat_sensor).start()
         self.create_node_files(self.node_id)
-
-        #while True:
-            # Check if there is a leader present
+        
+        if(self.hearbeat_detection):
+            self.leader_id = 1 #its the index no in IP list
+            print("Leader is present")
+            self.state="follower"
         
         if self.leader_id is None:
             # No leader present, start an election
@@ -44,8 +52,10 @@ class RaftNode:
 
         if self.state == "follower":
             self.follower_behavior()
+
         elif self.state == "candidate":
             self.candidate_behavior()
+
         elif self.state == "leader":
             self.leader_behavior()
 
@@ -53,16 +63,17 @@ class RaftNode:
     def follower_behavior(self):
         # Follower behavior
         print("leader Detected, becoming a follower")
-        if self.election_timer is None:
+        """if self.election_timer is None:
             self.start_election_timer()
         elif self.election_timer >= self.election_timeout:
             self.state = "candidate"
-            self.reset_election_timer()
+            self.reset_election_timer()"""
 
     def candidate_behavior(self):
         # Candidate behavior
         print("No Leader detected, Becomming a Candidate ")
         
+
         """if self.election_timer is None:
             self.start_election_timer()
             self.current_term += 1
@@ -86,7 +97,7 @@ class RaftNode:
             #if peer_node.request_vote(self.current_term, self.node_id):
                 # Received vote from peer node
                 pass
-
+    
     def receive_vote_request(self, term, candidate_id):
         # Follower's response to a vote request from a candidate
         if term > self.current_term:
@@ -156,14 +167,31 @@ class RaftNode:
         open(dump_path, 'a').close()
 
         print(f"Files created for node {node_id} at {node_path}")
+        return
 
     def generate_random_float(self):
         # Generate a random float between 5 to 10
         timer = random.uniform(5, 10)
         print(f"set election timer to {timer} seconds")
         return timer
-    
 
+    
+    def hearbeat_sensor(self):
+        print("Heartbeat sensor started")
+        # Check for heartbeat detection in a loop
+        while True:
+            print("Node Timeout started")
+            
+            print(self.x)
+            if(self.x==1):
+                self.hearbeat_detection=False
+                self.candidate_behavior()
+
+            self.hearbeat_detection = True
+            self.x = self.x+1
+            time.sleep(self.election_timer)  # Sleep for seconds before checking again
+        
+        
 if __name__ == "__main__":
     # Define peer nodes (replace with actual node instances)
     peer_nodes = ['IP1','IP2']
