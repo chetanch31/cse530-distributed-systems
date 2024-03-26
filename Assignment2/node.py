@@ -18,7 +18,6 @@ class RaftNode:
         self.log = []
         self.commit_index = 0
         self.last_applied = 0
-        self.election_timeout = random.randint(5, 10)  # Randomized election timeout
         self.heartbeat_timeout = 1  # Heartbeat timeout (in seconds)
         self.lease_duration = 7  # Lease duration (in seconds)
         self.leader_id = None
@@ -66,37 +65,44 @@ class RaftNode:
         if self.election_timer is None:
             self.start_election_timer()
             
-            #listen for messages from grpc
-            
             while True:
                 #listen for messages from grpc
-                
                 self.receive_message()
+                
             
         #ensure that it is actively counting the time not that the absolute values are greater
-        elif self.election_timer >= self.election_timeout:
-            self.state = "candidate"
-            self.reset_election_timer()
-
+        
     def candidate_behavior(self):
         # Candidate behavior
         print("No Leader detected, Becomming a Candidate ")
         self.state = "candidate"
-        response=self.request_votes()
-
-        #get votes back
+        # response=self.request_votes()
         
+        #response should be the list of votes received from all peer nodes
+        # if response>=len(peer_nodes)/2:
+        #     self.state="leader"
+        #     self.leader_id=self.node_id
+            #grpc sends message to all peer nodes that new leader is eleceted 
+            # leader_message={"type":"Leader","term":self.current_term}
+            
+            # self.leader_behavior()
+            
+        #get votes back
         
     def receive_message(self, message):
         if message["type"] == "AppendEntries":
             self.handle_append_entries(message)
         elif message["type"] == "RequestVote":
             self.receive_vote_request(message)
+            if self.state == "leader":
+                #send the node that requested vote through grpc the lease time of the leader
+                pass
         elif message["type"] == "Heartbeat":
             self.handle_heartbeat(message)
+            self.x=0
         else:
             print("Unknown message type")
-
+    
     def leader_behavior(self):
         # Leader behavior
         if self.heartbeat_timer is None:
@@ -110,12 +116,12 @@ class RaftNode:
     def request_votes(self):
         # Send vote requests to peer nodes
         for peer_node in self.peer_nodes:
-            #if peer_node.request_vote(self.current_term, self.node_id):
-                # Received vote from peer node
-                pass
+            # Send a vote request to the peer node using grpc
+            #response = self.____(peer_node)  
+            self.response = {"term": 1, "voteGranted": True}
+            return self.response
 
     def receive_vote_request(self, response):
-                
         term, voteGrangted = response["term"], response["voteGranted"]
         # Follower's response to a vote request from a candidate
         if term < self.current_term:
