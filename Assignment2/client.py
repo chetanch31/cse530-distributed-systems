@@ -9,7 +9,7 @@ import random
 class RaftClient:
     def __init__(self, node_addresses):
         self.node_addresses = node_addresses
-        self.leader_address = self.discover_leader()
+        self.leader_address = None
         
     def discover_leader(self):
         for address in self.node_addresses:
@@ -91,4 +91,4 @@ if __name__ == "__main__":
             break
         else:
             response = client.serve_client(request)
-        
+    
