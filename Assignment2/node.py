@@ -22,7 +22,7 @@ class RaftNode:
         self.heartbeat_timeout = 1  # Heartbeat timeout (in seconds)
         self.lease_duration = 7  # Lease duration (in seconds)
         self.leader_id = None
-        self.election_timer = self.generate_random_float
+        self.election_timer = self.generate_random_float()
         self.heartbeat_timer = None
         self.hearbeat_detection = False
         self.x=0
