@@ -8,6 +8,7 @@ import os
 node_count = 0 
 class RaftNode:
      # Class attribute to keep track of node count
+    #hello
 
     def __init__(self, node_id, peer_nodes):
         RaftNode.node_count = len(peer_nodes)+1
