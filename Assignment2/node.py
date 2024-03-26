@@ -24,6 +24,8 @@ class RaftNode:
         self.leader_id = None
         self.election_timer = self.generate_random_float
         self.heartbeat_timer = None
+        self.hearbeat_detection = False
+        self.x=0
 
         print(f"Node {self.node_id} created.")
 
@@ -33,6 +35,14 @@ class RaftNode:
 
     def run(self):
         print(f"Node {self.node_id} is running and active.")
+        
+        Thread(target=self.hearbeat_sensor).start()
+        self.create_node_files(self.node_id)
+        
+        if(self.hearbeat_detection):
+            self.leader_id = 1 #its the index no in IP list
+            print("Leader is present")
+            self.state="follower"
         self.create_node_files(self.node_id)
 
         #while True:
@@ -49,7 +59,6 @@ class RaftNode:
         elif self.state == "leader":
             self.leader_behavior()
 
-
     def follower_behavior(self):
         
         # Follower behavior
@@ -58,7 +67,6 @@ class RaftNode:
             self.start_election_timer()
             
             #listen for messages from grpc
-            
             
             while True:
                 #listen for messages from grpc
@@ -74,7 +82,8 @@ class RaftNode:
         # Candidate behavior
         print("No Leader detected, Becomming a Candidate ")
         self.state = "candidate"
-        self.request_votes()
+        response=self.request_votes()
+
         #get votes back
         
         
@@ -105,16 +114,14 @@ class RaftNode:
                 # Received vote from peer node
                 pass
 
-    def receive_vote_request(self, message):
-        
-        term, candidate_id, lastLogIndex, lastLogTerm  = message[0], message[1], message[2], message[3]
-        
+    def receive_vote_request(self, response):
+                
+        term, voteGrangted = response["term"], response["voteGranted"]
         # Follower's response to a vote request from a candidate
         if term < self.current_term:
             return False
-        elif term >= self.current_term & self.voted_for is None or self.voted_for == candidate_id:
+        elif term >= self.current_term & self.voted_for is None:
             self.current_term = term
-            self.voted_for = candidate_id
             return True
         else:
             return False
@@ -185,6 +192,21 @@ class RaftNode:
         print(f"set election timer to {timer} seconds")
         return timer
 
+    def hearbeat_sensor(self):
+        print("Heartbeat sensor started")
+        # Check for heartbeat detection in a loop
+        while True:
+            print("Node Timeout started")
+            
+            print(self.x)
+            if(self.x==1):
+                self.hearbeat_detection=False
+                self.candidate_behavior()
+
+            self.hearbeat_detection = True
+            self.x = self.x+1
+            time.sleep(self.election_timer)  # Sleep for seconds before checking again
+            
 if __name__ == "__main__":
     # Define peer nodes (replace with actual node instances)
     peer_nodes = ['IP1','IP2']
