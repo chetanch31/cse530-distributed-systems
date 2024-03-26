@@ -1,12 +1,15 @@
 import random
 import time
 from threading import Thread
+import os
 
 # Define gRPC communication here (not implemented in this code snippet)
 
 class RaftNode:
+    node_count = 0  # Class attribute to keep track of node count
+
     def __init__(self, node_id, peer_nodes):
-        RaftNode.node_count += 1
+        RaftNode.node_count = len(peer_nodes)+1
         self.node_id = node_id
         self.peer_nodes = peer_nodes
         self.state = "follower"
@@ -17,37 +20,39 @@ class RaftNode:
         self.last_applied = 0
         self.election_timeout = random.randint(5, 10)  # Randomized election timeout
         self.heartbeat_timeout = 1  # Heartbeat timeout (in seconds)
-        self.lease_duration = 5  # Lease duration (in seconds)
+        self.lease_duration = 7  # Lease duration (in seconds)
         self.leader_id = None
-        self.election_timer = None
+        self.election_timer = self.generate_random_float
         self.heartbeat_timer = None
-        
+
         print(f"Node {self.node_id} created.")
 
     def start(self):
         # Start the node's main loop in a separate thread
         Thread(target=self.run).start()
 
-
     def run(self):
-        
         print(f"Node {self.node_id} is running and active.")
+        self.create_node_files(self.node_id)
 
-        while True:
+        #while True:
             # Check if there is a leader present
-            if self.leader_id is None:
-                # No leader present, start an election
-                self.state = "candidate"
-            if self.state == "follower":
-                self.follower_behavior()
-            elif self.state == "candidate":
-                self.candidate_behavior()
-            elif self.state == "leader":
-                self.leader_behavior()
-            time.sleep(0.1)
+        
+        if self.leader_id is None:
+            # No leader present, start an election
+            self.state = "candidate"
+
+        if self.state == "follower":
+            self.follower_behavior()
+        elif self.state == "candidate":
+            self.candidate_behavior()
+        elif self.state == "leader":
+            self.leader_behavior()
+
 
     def follower_behavior(self):
         # Follower behavior
+        print("leader Detected, becoming a follower")
         if self.election_timer is None:
             self.start_election_timer()
         elif self.election_timer >= self.election_timeout:
@@ -56,6 +61,7 @@ class RaftNode:
 
     def candidate_behavior(self):
         # Candidate behavior
+        print("No Leader detected, Becomming a Candidate ")
         if self.election_timer is None:
             self.start_election_timer()
             self.current_term += 1
@@ -76,7 +82,7 @@ class RaftNode:
     def request_votes(self):
         # Send vote requests to peer nodes
         for peer_node in self.peer_nodes:
-            if peer_node.request_vote(self.current_term, self.node_id):
+            #if peer_node.request_vote(self.current_term, self.node_id):
                 # Received vote from peer node
                 pass
 
@@ -122,9 +128,44 @@ class RaftNode:
         # Follower's response to append entries from the leader
         pass
 
+    def create_node_files(self, node_id):
+        base_dir = 'assignment'
+        node_dir = f'logs_node_{node_id}'
+        logs_file = 'logs.txt'
+        metadata_file = 'metadata.txt'
+        dump_file = 'dump.txt'
+
+        # Create the base directory if it doesn't exist
+        if not os.path.exists(base_dir):
+            os.makedirs(base_dir)
+
+        # Create the node directory under the base directory
+        node_path = os.path.join(base_dir, node_dir)
+        if not os.path.exists(node_path):
+            os.makedirs(node_path)
+
+        # Create logs.txt, metadata.txt, and dump.txt files under the node directory
+        logs_path = os.path.join(node_path, logs_file)
+        metadata_path = os.path.join(node_path, metadata_file)
+        dump_path = os.path.join(node_path, dump_file)
+
+        # Create empty files if they don't exist
+        open(logs_path, 'a').close()
+        open(metadata_path, 'a').close()
+        open(dump_path, 'a').close()
+
+        print(f"Files created for node {node_id} at {node_path}")
+
+    def generate_random_float(self):
+        # Generate a random float between 5 to 10
+        timer = random.uniform(5, 10)
+        print(f"set election timer to {timer} seconds")
+        return timer
+    
+
 if __name__ == "__main__":
     # Define peer nodes (replace with actual node instances)
-    peer_nodes = []
+    peer_nodes = ['IP1','IP2']
 
     # Create and start Raft nodes
     node1 = RaftNode(node_id=1, peer_nodes=peer_nodes)
@@ -135,5 +176,3 @@ if __name__ == "__main__":
     print("Node 1 is running...")
     # node2.start()
     # node3.start()
-    
-    
