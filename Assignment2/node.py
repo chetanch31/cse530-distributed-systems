@@ -62,13 +62,14 @@ class RaftNode:
     def candidate_behavior(self):
         # Candidate behavior
         print("No Leader detected, Becomming a Candidate ")
-        if self.election_timer is None:
+        
+        """if self.election_timer is None:
             self.start_election_timer()
             self.current_term += 1
             self.voted_for = self.node_id
             self.request_votes()
         elif self.election_timer >= self.election_timeout:
-            self.reset_election_timer()
+            self.reset_election_timer()"""
 
     def leader_behavior(self):
         # Leader behavior
