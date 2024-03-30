@@ -54,6 +54,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         response = raft_pb2.ServeClientReply()
         print(request)
 
+        self.parse_and_apply_command(request)
+            
         if request.request == "ping" and self.leader_id == self.node_id:
             response.data = "data"
             response.leaderId = str(self.leader_id)
@@ -65,6 +67,47 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             response.success = False
 
         return response
+    
+    def parse_and_apply_command(self, command_str):
+        # Split the command string into tokens
+        tokens = command_str.strip('{}').split()
+        
+        if tokens[0] == 'SET':
+            # Parse SET command
+            if len(tokens) != 3:
+                return "SET command should have format: SET key value"
+            key, value = tokens[1], tokens[2]
+            self.log.append({'type': 'SET', 'key': key, 'value': value})
+            self.write_to_log_file(f"SET {key} {value}\n")  # Write to log file
+            return "SET operation successful"
+
+        elif tokens[0] == 'GET':
+            # Parse GET command
+            if len(tokens) != 2:
+                return "GET command should have format: GET key"
+            key = tokens[1]
+            # Search the log for the latest value of the specified key
+            latest_value = self.get_latest_value(key)
+            return latest_value if latest_value is not None else "Key not found"
+
+        else:
+            return "Invalid command"
+
+    def get_latest_value(self, key):
+        # Search the log for the latest value of the specified key
+        # Start from the end of the log to find the most recent SET operation for the key
+        for entry in reversed(self.log):
+            if entry['type'] == 'SET' and entry['key'] == key:
+                return entry['value']
+        return None  # Key not found in the log
+
+    def write_to_log_file(self, content):
+        # Write content to log file
+        with open(self.log_file, 'a') as f:
+            f.write(content)
+
+        
+
     def AppendEntries(self, request, context):
 
         if request.isHeartbeat:
@@ -381,7 +424,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     node_id = int(sys.argv[1])
-    peer_nodes = ["localhost:50589", "localhost:50590"]
+    peer_nodes = ["localhost:50589", "localhost:50590","localhost:55591"]
 
     node = Node(node_id=node_id, peer_nodes=peer_nodes)
     node_ip = peer_nodes[node_id]
