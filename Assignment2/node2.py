@@ -365,7 +365,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     node_id = int(sys.argv[1])
-    peer_nodes = ["localhost:50589", "localhost:50590"]
+    peer_nodes = ["localhost:50589", "localhost:50590","localhost:50591","localhost:50592"]
 
     node = Node(node_id=node_id, peer_nodes=peer_nodes)
     node_ip = peer_nodes[node_id]
