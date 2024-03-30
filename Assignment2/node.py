@@ -30,7 +30,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.last_applied = 0
         self.heartbeat_timeout = 1  # Heartbeat timeout (in seconds)
         self.lease_duration = 7  # Lease duration (in seconds)
-        self.leader_id = None
+        self.leader_id = 0
         self.election_timer = self.generate_random_float()
         self.heartbeat_timer = None
         self.hearbeat_detection = False
@@ -100,6 +100,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         return response
 
     def start(self):
+        time.sleep(10)
         # Start the node's main loop in a separate thread
         # Thread(target=self.run).start()
         self.run()
@@ -107,7 +108,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def run(self):
         print(f"Node {self.node_id} is running and active.")
 
-        Thread(target=self.hearbeat_sensor).start()
+        """Thread(target=self.hearbeat_sensor).start()
         self.create_node_files(self.node_id)
 
         if (self.hearbeat_detection):
@@ -121,7 +122,9 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
         if self.leader_id is None:
             # No leader present, start an election
-            self.state = "candidate"
+            self.state = "candidate"""
+        
+        self.state = "leader"
 
         if self.state == "follower":
             self.follower_behavior()
@@ -217,14 +220,11 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             print("Unknown message type")
 
     def leader_behavior(self):
-        # Leader behavior
-        if self.heartbeat_timer is None:
-            self.start_heartbeat_timer()
-            self.acquire_lease()
-            schedule.every(1).seconds.do(self.send_heartbeats())
-            # what is happening here
-        elif self.heartbeat_timer >= self.heartbeat_timeout:
-            self.reset_heartbeat_timer()
+        print(f"Node {self.node_id} is the leader")
+        self.leader_id = node_id
+        self.current_term +=1
+        schedule.every(1).seconds.do(self.send_heartbeats())
+
 
     def request_votes(self):
         # Send vote requests to peer nodes
@@ -266,6 +266,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         pass
 
     def send_heartbeats(self):
+        print("heartbeat sent")
         # Send heartbeats to followers
         request = raft_pb2.AppendEntriesRequest()
         request.term = self.current_term
@@ -369,8 +370,13 @@ if __name__ == "__main__":
 
     print(f"Server started for node {node_id}. Listening on {node_ip}")
 
-    while True:
+    time.sleep(1)
+    Thread(target=node.start()).start()
+
+    server.wait_for_termination()
+    
+    """while True:        
         time.sleep(1)
         node.start()
-        print(f"Node {node_id} is running...")
+        print(f"Node {node_id} is running...")"""
 
