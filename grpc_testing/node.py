@@ -54,7 +54,7 @@ if __name__ == "__main__":
         print("Usage: python filename.py <node_id>")
         sys.exit(1)
 
-    node_id = int(sys.argv[1])
+
     peer_list = ["127.0.0.1:50500", "127.0.0.1:50501"]
 
     node = Node(node_id, peer_list)
