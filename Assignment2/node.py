@@ -38,6 +38,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def serve(self):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
         raft_pb2_grpc.add_RaftNodeServicer_to_server(self, server=server)
+        print(f"Started listening at {self.peer_nodes[self.node_id]}")
         server.add_insecure_port(self.peer_nodes[self.node_id])
         server.start()
     
