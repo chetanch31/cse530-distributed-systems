@@ -5,6 +5,9 @@ from threading import Thread
 import os
 import grpc
 from concurrent import futures
+
+from grpc._channel import _InactiveRpcError
+
 import raft_pb2
 import raft_pb2_grpc
 import schedule
@@ -47,7 +50,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     #
     def AppendEntries(self, request, context):
 
-        if request.isHeartbeat == True:
+        if request.isHeartbeat:
             # The current request is just an heartbeat
             self.x = 0
             return raft_pb2.AppendEntriesResponse(term=self.current_term, success=True)
@@ -191,10 +194,13 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
     def request_vote(self, peer_node, request):
         print(peer_node)
-        channel = grpc.insecure_channel(peer_node)
-        stub = raft_pb2_grpc.RaftNodeStub(channel)
-        response = stub.RequestVote(request=request)
-        return response
+        try:
+            channel = grpc.insecure_channel(peer_node)
+            stub = raft_pb2_grpc.RaftNodeStub(channel)
+            response = stub.RequestVote(request=request)
+            return response
+        except _InactiveRpcError:
+            print(f"The node at {peer_node} is offline")
 
     def receive_message(self, message):
         if message["type"] == "AppendEntries":
@@ -275,10 +281,13 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                 continue
 
             print(peer_node)
-            channel = grpc.insecure_channel(peer_node)
-            stub = raft_pb2_grpc.RaftNodeStub(channel)
-            response = stub.AppendEntries(request=request)
-            print(f"Got response: {response}")
+            try:
+                channel = grpc.insecure_channel(peer_node)
+                stub = raft_pb2_grpc.RaftNodeStub(channel)
+                response = stub.AppendEntries(request=request)
+                print(f"Got response: {response}")
+            except _InactiveRpcError:
+                print(f"The node at {peer_node} is offline")
 
     def append_entries(self, term, leader_id):
         # Append entries to the log
