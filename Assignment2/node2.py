@@ -165,7 +165,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                 continue
 
             response = self.request_vote(peer_node, request)
-            if response.vote_granted:
+            if response is not None and response.voteGranted:
+
                 votes_received += 1
 
         # Check if the candidate received the majority of votes

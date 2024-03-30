@@ -3,6 +3,7 @@ import sys
 import time
 from threading import Thread
 import os
+
 import grpc
 from concurrent import futures
 
@@ -11,7 +12,6 @@ from grpc._channel import _InactiveRpcError
 import raft_pb2
 import raft_pb2_grpc
 import schedule
-
 
 # Define gRPC communication here (not implemented in this code snippet)
 
@@ -165,7 +165,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                 continue
 
             response = self.request_vote(peer_node, request)
-            if response.vote_granted:
+            if response.voteGranted:
                 votes_received += 1
 
         # Check if the candidate received the majority of votes
@@ -221,7 +221,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
     def leader_behavior(self):
         print(f"Node {self.node_id} is the leader")
-        self.leader_id = node_id
+        self.leader_id = self.node_id
         self.current_term +=1
         Thread(target=self.send_heartbeats()).start()
 
@@ -266,7 +266,9 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         pass
 
     def send_heartbeats(self):
+        print("Sending heartbeats")
         while True:
+            print("Sending heartbeats inside true")
             if self.state!="leader":
                 break
 
@@ -384,4 +386,3 @@ if __name__ == "__main__":
         time.sleep(1)
         node.start()
         print(f"Node {node_id} is running...")"""
-
