@@ -24,7 +24,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.last_applied = 0
         self.heartbeat_timeout = 1  # Heartbeat timeout (in seconds)
         self.lease_duration = 7  # Lease duration (in seconds)
-        self.leader_id = None
+        self.leader_id = 0
         self.election_timer = self.generate_random_float()
         self.heartbeat_timer = None
         self.hearbeat_detection = False
@@ -187,7 +187,6 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         #get votes back
             
     def request_vote(self, peer_node, request):
-        print(peer_node)
         channel = grpc.insecure_channel(peer_node)
         stub = raft_pb2_grpc.RaftNodeStub(channel)
         response = stub.RequestVote(request=request)
@@ -270,8 +269,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         for node_id, peer_node in enumerate(self.peer_nodes, start=0):
             if node_id == self.node_id:
                 continue  
-            
-            print(peer_node)
+
             channel = grpc.insecure_channel(peer_node)
             stub = raft_pb2_grpc.RaftNodeStub(channel)
             response = stub.AppendEntries(request=request)
@@ -338,14 +336,14 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             
 if __name__ == "__main__":
     # Define peer nodes (replace with actual node instances)
+    # peer_nodes = ['localhost:50555','localhost:50556']
     peer_nodes = ["localhost:50589","localhost:50590"]
+    # # Create and start Raft nodes
+    # node1 = RaftNode(node_id=0, peer_nodes=peer_nodes)
+    node2 = Node(node_id=1, peer_nodes=peer_nodes)
+    # # node3 = RaftNode(node_id=3, peer_nodes=peer_nodes)
 
-    # Create and start Raft nodes
-    node1 = Node(node_id=0, peer_nodes=peer_nodes)
-    # node2 = RaftNode(node_id=1, peer_nodes=peer_nodes)
-    # node3 = RaftNode(node_id=3, peer_nodes=peer_nodes)
-
-    node1.start()
-    print("Node 1 is running...")
-    # node2.start()
+    # node1.start()
+    # print("Node 1 is running...")
+    node2.start()
     # node3.start()
