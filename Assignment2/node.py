@@ -48,6 +48,23 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     #     server.add_insecure_port(self.peer_nodes[self.node_id])
     #     server.start()
     #
+
+    def ServeClient(self, request, context):
+
+        response = raft_pb2.ServeClientReply()
+        print(request)
+
+        if request.request == "ping" and self.leader_id == self.node_id:
+            response.data = "data"
+            response.leaderId = str(self.leader_id)
+            response.success = True
+
+        else:
+            response.data = "data"
+            response.leaderId = str(self.leader_id)
+            response.success = False
+
+        return response
     def AppendEntries(self, request, context):
 
         if request.isHeartbeat:

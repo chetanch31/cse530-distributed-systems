@@ -5,6 +5,17 @@ package raft;
 service RaftNode {
     rpc AppendEntries(AppendEntriesRequest) returns (AppendEntriesResponse) {}
     rpc RequestVote(RequestVoteRequest) returns (RequestVoteResponse) {}
+    rpc ServeClient (ServeClientArgs) returns (ServeClientReply) {}
+}
+
+message ServeClientArgs {
+  string request = 1;
+}
+
+message ServeClientReply {
+  string data = 1;
+  string leaderId = 2;
+  bool success = 3;
 }
 
 message AppendEntriesRequest {
