@@ -223,7 +223,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         print(f"Node {self.node_id} is the leader")
         self.leader_id = node_id
         self.current_term +=1
-        schedule.every(1).seconds.do(self.send_heartbeats())
+        Thread(target=self.send_heartbeats()).start()
 
 
     def request_votes(self):
@@ -266,29 +266,34 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         pass
 
     def send_heartbeats(self):
-        print("heartbeat sent")
-        # Send heartbeats to followers
-        request = raft_pb2.AppendEntriesRequest()
-        request.term = self.current_term
-        request.leaderId = self.node_id
-        request.prevLogIndex = len(self.log) - 1 if self.log else 0  # Index of the last log entry
-        request.prevLogTerm = self.log[-1].term if self.log else 0  # Term of the last log entry
-        request.leaderCommit = self.commit_index  # Index of highest log entry known to be committed
-        request.leaderLeaseDuration = self.lease_duration
-        request.isHeartbeat = True
+        while True:
+            if self.state!="leader":
+                break
 
-        for node_id, peer_node in enumerate(self.peer_nodes, start=0):
-            if node_id == self.node_id:
-                continue
+            # Send heartbeats to followers
+            request = raft_pb2.AppendEntriesRequest()
+            request.term = self.current_term
+            request.leaderId = self.node_id
+            request.prevLogIndex = len(self.log) - 1 if self.log else 0  # Index of the last log entry
+            request.prevLogTerm = self.log[-1].term if self.log else 0  # Term of the last log entry
+            request.leaderCommit = self.commit_index  # Index of highest log entry known to be committed
+            request.leaderLeaseDuration = self.lease_duration
+            request.isHeartbeat = True
 
-            print(peer_node)
-            try:
-                channel = grpc.insecure_channel(peer_node)
-                stub = raft_pb2_grpc.RaftNodeStub(channel)
-                response = stub.AppendEntries(request=request)
-                print(f"Got response: {response}")
-            except _InactiveRpcError:
-                print(f"The node at {peer_node} is offline")
+            for node_id, peer_node in enumerate(self.peer_nodes, start=0):
+                if node_id == self.node_id:
+                    continue
+
+                print(peer_node)
+                try:
+                    channel = grpc.insecure_channel(peer_node)
+                    stub = raft_pb2_grpc.RaftNodeStub(channel)
+                    response = stub.AppendEntries(request=request)
+                    print(f"Got response: {response}")
+                except _InactiveRpcError:
+                    print(f"The node at {peer_node} is offline")
+
+                time.sleep(1)
 
     def append_entries(self, term, leader_id):
         # Append entries to the log
