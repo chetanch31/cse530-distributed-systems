@@ -2,10 +2,14 @@ import random
 import time
 from threading import Thread
 import os
-
+import grpc
+from concurrent import futures
+import raft_pb2
+import raft_pb2_grpc
+import schedule
 # Define gRPC communication here (not implemented in this code snippet)
 
-class RaftNode:
+class RaftNode(raft_pb2_grpc.RaftNodeServicer):
     node_count = 0  # Class attribute to keep track of node count
 
     def __init__(self, node_id, peer_nodes):
@@ -25,8 +29,67 @@ class RaftNode:
         self.heartbeat_timer = None
         self.hearbeat_detection = False
         self.x=0
-
+        self.serve()
+        # self.channel = grpc.insecure_channel("34.133.227.248:50051")
+        # self.stub = task_pb2_grpc.MarketStub(self.channel)
+        
         print(f"Node {self.node_id} created.")
+
+    def serve(self):
+        server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+        raft_pb2_grpc.add_RaftNodeServicer_to_server(self, server=server)
+        server.add_insecure_port(self.peer_nodes[self.node_id])
+        server.start()
+    
+    def AppendEntries(self, request, context):
+        
+        if request.isHeartbeat == True:
+            #The current request is just an heartbeat
+            self.x = 0
+            return raft_pb2.AppendEntriesResponse(term=self.current_term, success=True)
+
+        if request.term < self.current_term:
+            return raft_pb2.AppendEntriesResponse(term=self.current_term, success=False)
+
+        if len(self.log) < request.prevLogIndex or (len(self.log) > 0 and self.log[request.prevLogIndex - 1].term != request.prevLogTerm):
+            return raft_pb2.AppendEntriesResponse(term=self.current_term, success=False)
+
+        # Step 3: If an existing entry conflicts with a new one, delete the existing entry and all that follow it
+        # This step can be omitted if you handle log consistency elsewhere
+
+        for entry in request.entries:
+            if len(self.log) < entry.index:
+                self.log.append(entry)
+            else:
+                self.log[entry.index - 1] = entry
+
+        if request.leaderCommit > self.commit_index:
+            self.commit_index = min(request.leaderCommit, len(self.log))
+
+        self.current_term = request.term
+        return raft_pb2.AppendEntriesResponse(term=self.current_term, success=True)
+
+    def RequestVote(self, request, context):
+        response = raft_pb2.RequestVoteResponse()
+        response.term = self.current_term
+        
+        # Check if the candidate's term is less than the current term
+        if request.term < self.current_term:
+            response.voteGranted = False
+            return response
+        
+        # Check if the node has already voted for a candidate in this term
+        if self.voted_for is None or self.voted_for == request.candidateId:
+            # Check if the candidate’s log is at least as up-to-date as the receiver’s log
+            if (request.lastLogTerm > self.log[-1].term) or \
+            (request.lastLogTerm == self.log[-1].term and request.lastLogIndex >= len(self.log) - 1):
+                response.voteGranted = True
+                self.voted_for = request.candidateId
+                return response
+        
+        # If the conditions are not met, do not grant the vote
+        response.voteGranted = False
+        return response
 
     def start(self):
         # Start the node's main loop in a separate thread
@@ -74,8 +137,41 @@ class RaftNode:
         
     def candidate_behavior(self):
         # Candidate behavior
-        print("No Leader detected, Becomming a Candidate ")
+        print("No Leader detected, Becoming a Candidate ")
         self.state = "candidate"
+        
+        # Prepare the RequestVoteRequest message
+        request = raft_pb2.RequestVoteRequest()
+        request.term = self.current_term
+        request.candidateId = self.node_id
+        request.lastLogIndex = len(self.log) - 1 if self.log else 0
+        request.lastLogTerm = self.log[-1].term if self.log else 0
+        
+        # Send the request to each peer node and gather responses
+        votes_received = 1  # Counting self vote
+        for node_id, peer_node in enumerate(self.peer_nodes, start=1):
+            if node_id == self.node_id:
+                continue  
+
+            response = self.request_vote(peer_node, request)
+            if response.vote_granted:
+                votes_received += 1
+
+        
+        # Check if the candidate received the majority of votes
+        if votes_received > len(self.peer_nodes) // 2:
+            # Become the leader if the candidate received the majority of votes
+            print("Received majority of votes. Becoming the leader.")
+            self.state = "leader"
+            self.leader_id = self.node_id
+            # Perform leader initialization tasks here
+            self.leader_behavior()
+        else:
+            # Did not receive the majority of votes, remain a candidate
+            print("Did not receive majority of votes. Remaining a candidate.")
+            self.x = 0
+            self.follower_behavior()
+
         # response=self.request_votes()
         
         #response should be the list of votes received from all peer nodes
@@ -88,7 +184,13 @@ class RaftNode:
             # self.leader_behavior()
             
         #get votes back
-        
+            
+    def request_vote(self, peer_node, request):
+        channel = grpc.insecure_channel(peer_node)
+        stub = raft_pb2_grpc.RaftNode(channel)
+        response = stub.RequestVote(request=request)
+        return response
+    
     def receive_message(self, message):
         if message["type"] == "AppendEntries":
             self.handle_append_entries(message)
@@ -108,7 +210,7 @@ class RaftNode:
         if self.heartbeat_timer is None:
             self.start_heartbeat_timer()
             self.acquire_lease()
-            self.send_heartbeats()
+            schedule.every(5).seconds.do(self.send_heartbeats())
             #what is happening here
         elif self.heartbeat_timer >= self.heartbeat_timeout:
             self.reset_heartbeat_timer()
@@ -154,7 +256,23 @@ class RaftNode:
 
     def send_heartbeats(self):
         # Send heartbeats to followers
-        pass
+        request = raft_pb2.AppendEntriesRequest()
+        request.term = self.current_term
+        request.leaderId = self.node_id
+        request.prevLogIndex = len(self.log) - 1 if self.log else 0  # Index of the last log entry
+        request.prevLogTerm = self.log[-1].term if self.log else 0   # Term of the last log entry
+        request.leaderCommit = self.commit_index                    # Index of highest log entry known to be committed
+        request.leaderLeaseDuration = self.lease_duration  
+        request.isHeartbeat = True
+
+        for node_id, peer_node in enumerate(self.peer_nodes, start=1):
+            if node_id == self.node_id:
+                continue  
+
+            channel = grpc.insecure_channel(peer_node)
+            stub = raft_pb2_grpc.RaftNode(channel)
+            response = stub.AppendEntries(request=request)
+            print(f"Got response: {response}")
 
     def append_entries(self, term, leader_id):
         # Append entries to the log
@@ -209,7 +327,9 @@ class RaftNode:
                 self.hearbeat_detection=False
                 self.candidate_behavior()
 
-            self.hearbeat_detection = True
+            if self.leader_id is not None:
+                self.hearbeat_detection = True
+
             self.x = self.x+1
             time.sleep(self.election_timer)  # Sleep for seconds before checking again
             

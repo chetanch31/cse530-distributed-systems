@@ -1,6 +1,8 @@
 # import grpc
 import time
 import random
+from raft_pb2_grpc import RaftNodeStub
+from raft_pb2 import ServeClientArgs
 
 # Import gRPC generated code (replace with actual generated code)
 # from your_proto_file_pb2_grpc import RaftNodeStub
