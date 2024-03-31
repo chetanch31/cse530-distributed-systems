@@ -1,3 +1,0 @@
-SET hi hello
-SET hello hi
-SET hello hi
