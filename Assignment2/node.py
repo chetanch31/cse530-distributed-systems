@@ -39,7 +39,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.log_file = f'Assignment2/assignment/logs_node_{node_id}/logs.txt'
         self.metadata_file = f'Assignment2/assignment/logs_node_{node_id}/metadata.txt'
         self.dump_file = f'Assignment2/assignment/logs_node_{node_id}/dump.txt'
-
+        self.lease_timer = 0
+        self.new_leader_lease_check =0
         # self.serve()
         # self.channel = grpc.insecure_channel("34.133.227.248:50051")
         # self.stub = task_pb2_grpc.MarketStub(self.channel)
@@ -175,6 +176,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         if request.isHeartbeat:
             # The current request is just a heartbeat
             self.x = 0
+            self.new_leader_lease_check=request.leaderLeaseDuration
             return raft_pb2.AppendEntriesResponse(term=self.current_term, success=True)
 
         if request.term < self.current_term:
@@ -281,7 +283,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             # No leader present, start an election
             self.state = "candidate"""
 
-        self.state = "leader"
+        self.state = "follower"
+        Thread(target=self.hearbeat_sensor).start()
 
         if self.state == "follower":
             self.follower_behavior()
@@ -308,6 +311,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         print("No Leader detected, Becoming a Candidate ")
         self.state = "candidate"
 
+        self.voted_for=self.node_id
+
         # Prepare the RequestVoteRequest message
         request = raft_pb2.RequestVoteRequest()
         request.term = self.current_term
@@ -322,7 +327,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                 continue
 
             response = self.request_vote(peer_node, request)
-            if response.voteGranted:
+            if response:
                 votes_received += 1
 
         # Check if the candidate received the majority of votes
@@ -358,9 +363,10 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             channel = grpc.insecure_channel(peer_node)
             stub = raft_pb2_grpc.RaftNodeStub(channel)
             response = stub.RequestVote(request=request)
-            return response
+            return response.voteGranted
         except _InactiveRpcError:
             print(f"The node at {peer_node} is offline")
+            return False
 
     def receive_message(self, message):
         if message["type"] == "AppendEntries":
@@ -377,12 +383,14 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             print("Unknown message type")
 
     def leader_behavior(self):
+        time.sleep(time.time()-self.new_leader_lease_check)
         print(f"Node {self.node_id} is the leader")
         self.write_to_log_file("NO OP 0")
         self.leader_id = self.node_id
         self.current_term += 1
         self.write_metadata()
         Thread(target=self.send_heartbeats()).start()
+        Thread(target=self.lease_checker()).start()
 
     def request_votes(self):
         # Send vote requests to peer nodes
@@ -391,6 +399,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             # response = self.____(peer_node)
             self.response = {"term": 1, "voteGranted": True}
             return self.response
+        
 
     def receive_vote_request(self, response):
         term, voteGrangted = response["term"], response["voteGranted"]
@@ -428,6 +437,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         while True:
             print("Sending heartbeats inside true")
             if self.state != "leader":
+                sys.exit()
                 break
 
             # Send heartbeats to followers
@@ -438,8 +448,9 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             # print("Prtining prev log", self.log[-1])
             request.prevLogTerm = self.log[-1].get('term') if self.log else 0  # Term of the last log entry
             request.leaderCommit = self.commit_index  # Index of highest log entry known to be committed
-            request.leaderLeaseDuration = self.lease_duration
+            request.leaderLeaseDuration = time.time()
             request.isHeartbeat = True
+            count=0
 
             for node_id, peer_node in enumerate(self.peer_nodes, start=0):
                 if node_id == self.node_id:
@@ -450,11 +461,29 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                     channel = grpc.insecure_channel(peer_node)
                     stub = raft_pb2_grpc.RaftNodeStub(channel)
                     response = stub.AppendEntries(request=request)
+                    if response.status:
+                        count+=1
                     print(f"Got response: {response}")
                 except _InactiveRpcError:
                     print(f"The node at {peer_node} is offline")
 
                 time.sleep(1)
+            if(count>=len(peer_nodes)/2):
+                self.lease_timer=0
+
+    def lease_checker(self):
+        
+        while True:
+            if(self.state!="leader"):
+                sys.exit()
+                break
+            if(self.lease_timer==1):
+                self.follower_behavior()
+                self.state = "follower"
+
+            self.lease_timer = self.lease_timer+1
+            time.sleep(self.lease_duration)
+        
 
     def append_entries(self, term, leader_id):
         # Append entries to the log
