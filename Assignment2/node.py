@@ -25,7 +25,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.peer_nodes = peer_nodes
         self.state = "follower"
         self.current_term = 0
-        self.voted_for = None
+        self.voted_for = -1
         self.log = []
         self.commit_index = 0
         self.last_applied = 0
@@ -216,19 +216,22 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def RequestVote(self, request, context):
         response = raft_pb2.RequestVoteResponse()
         response.term = self.current_term
-        response.voteGranted = True
-        return response
+        # response.voteGranted = True
+        # return response
 
         # Check if the candidate's term is less than the current term
-        if request.term < self.current_term:
-            response.voteGranted = False
-            return response
+        # if request.term < self.current_term:
+        #     print(f"Sending False for terms {request.term} {self.current_term}")
+        #     response.voteGranted = False
+        #     return response
 
         # Check if the node has already voted for a candidate in this term
-        if self.voted_for is None or self.voted_for == request.candidateId:
-            # Check if the candidate’s log is at least as up-to-date as the receiver’s log
+        print(self.voted_for, request.candidateId)
+        if self.voted_for == -1 or self.voted_for == request.candidateId:
+            print("Checking condition")
             if (request.lastLogTerm > self.log[-1].term) or \
                     (request.lastLogTerm == self.log[-1].term and request.lastLogIndex >= len(self.log) - 1):
+                print("Inner Condition")
                 response.voteGranted = True
                 self.voted_for = request.candidateId
                 self.write_metadata()
@@ -315,7 +318,6 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         print("No Leader detected, Becoming a Candidate ")
         self.state = "candidate"
 
-        self.voted_for=self.node_id
 
         # Prepare the RequestVoteRequest message
         request = raft_pb2.RequestVoteRequest()
@@ -334,6 +336,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             if response:
                 votes_received += 1
 
+        self.voted_for = self.node_id
         # Check if the candidate received the majority of votes
         if votes_received > len(self.peer_nodes) // 2:
             # Become the leader if the candidate received the majority of votes
@@ -411,7 +414,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         # Follower's response to a vote request from a candidate
         if term < self.current_term:
             return False
-        elif term >= self.current_term & self.voted_for is None:
+        elif term >= self.current_term & self.voted_for == -1:
             self.current_term = term
             return True
         else:
