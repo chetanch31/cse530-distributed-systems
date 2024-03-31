@@ -13,7 +13,6 @@ import raft_pb2
 import raft_pb2_grpc
 import schedule
 
-
 # Define gRPC communication here (not implemented in this code snippet)
 
 class Node(raft_pb2_grpc.RaftNodeServicer):
@@ -67,7 +66,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             response.success = True
             return response
 
-        print(self.parse_and_apply_command(request.request))
+        print(self.parse_and_apply_command(request))
         response.data = "data"
         response.leaderId = str(self.leader_id)
         response.success = False
@@ -86,6 +85,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             self.log.append({'type': 'SET', 'key': key, 'value': value, 'term':self.current_term})
             print(self.log)
             self.write_to_log_file(f"SET {key} {value} {self.current_term}\n")  # Write to log file
+            self.write_to_dump_file(f"SET {key} {value} {self.current_term}\n")
 
             for current_id, peer_node in enumerate(self.peer_nodes, start=0):
                 if current_id == self.node_id:
@@ -171,8 +171,17 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             print(f"Error occurred while reading file '{self.log_file}': {e}")
 
     def write_to_dump_file(self, message):
-        with open(self.dump_file, 'a') as dump_file:
-            dump_file.write(f"{message}\n")
+        try:
+            # Open the log file in read mode
+            with open(self.dump_file, 'a') as dump_file:
+                dump_file.write(f"{message}\n")
+                    
+        except FileNotFoundError:
+            print(f"Error: File '{self.log_file}' not found.")
+        except Exception as e:
+            print(f"Error occurred while reading file '{self.log_file}': {e}")
+        
+        
 
 
     def AppendEntries(self, request, context):
@@ -232,7 +241,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         # Check if the node has already voted for a candidate in this term
 
         print(self.voted_for)
-        print(request.candidateId)
+        
 
         if self.voted_for == -1 or self.voted_for == request.candidateId:
             print("Checking condition")
@@ -243,6 +252,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                 print("Inner Condition")
                 response.voteGranted = True
                 self.voted_for = request.candidateId
+                self.write_to_dump_file(f"Voted for {self.voted_for}")
                 self.write_metadata()
                 return response
 
@@ -251,8 +261,16 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         return response
     
     def write_metadata(self):
-        with open(self.metadata_file, 'w') as f:  # Use 'w' mode for write (overwrite)
-            f.write(f"{self.current_term}\n{self.voted_for}\n")
+        try:
+            # Open the log file in read mode
+            with open(self.metadata_file, 'w') as f:  # Use 'w' mode for write (overwrite)
+                f.write(f"{self.current_term}\n{self.voted_for}\n")
+                    
+        except FileNotFoundError:
+            print(f"Error: File '{self.log_file}' not found.")
+        except Exception as e:
+            print(f"Error occurred while reading file '{self.log_file}': {e}")
+        
 
     def read_metadata(self):
         try:
@@ -262,6 +280,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                     self.current_term = int(lines[0].strip())
                     self.voted_for = int(lines[1].strip())
                     print(f"Metadata read successfully: current_term={self.current_term}, voted_for={self.voted_for}")
+                    self.write_to_dump_file(f"Metadata read successfully: current_term={self.current_term}, voted_for={self.voted_for}")
                 else:
                     print("Error: Metadata file does not have enough lines.")
         except FileNotFoundError:
@@ -278,6 +297,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
     def run(self):
         print(f"Node {self.node_id} is running and active.")
+        self.write_to_dump_file(f"Node {self.node_id} is running and active.")
         self.fetch_log_lines()
         self.read_metadata()
 
@@ -307,6 +327,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
         # Follower behavior
         print(f"Node {self.node_id} is in Follower state.")
+        self.write_to_dump_file(f"Node {self.node_id} is in Follower state.")
         if self.election_timer is None:
             self.start_election_timer()
 
@@ -319,6 +340,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def candidate_behavior(self):
         # Candidate behavior
         print("No Leader detected, Becoming a Candidate ")
+        self.write_to_dump_file("No Leader detected, Becoming a Candidate ")
         self.state = "candidate"
         self.current_term+=1
 
@@ -350,6 +372,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         if votes_received > len(self.peer_nodes) // 2:
             # Become the leader if the candidate received the majority of votes
             print("Received majority of votes. Becoming the leader.")
+            self.write_to_dump_file("Received majority of votes. Becoming the leader.")
             self.state = "leader"
             self.leader_id = self.node_id
             # Perform leader initialization tasks here
@@ -357,6 +380,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         else:
             # Did not receive the majority of votes, remain a candidate
             print("Did not receive majority of votes. Remaining a candidate.")
+            self.write_to_dump_file("Did not receive majority of votes. Remaining a candidate.")
             self.x = 0
             self.follower_behavior()
 
@@ -382,6 +406,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             return response.voteGranted
         except _InactiveRpcError:
             print(f"The node at {peer_node} is offline")
+            self.write_to_dump_file(f"The node at {peer_node} is offline")
             return False
 
     def receive_message(self, message):
@@ -399,23 +424,17 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             print("Unknown message type")
 
     def leader_behavior(self):
-        print(int(time.time()-self.new_leader_lease_check))
-        #time.sleep(time.time()-self.new_leader_lease_check)
+        if(int(time.time()-self.new_leader_lease_check)>=1) and (int(time.time()-self.new_leader_lease_check)<=10):
+            time.sleep(time.time()-self.new_leader_lease_check)
+
         print(f"Node {self.node_id} is the leader")
+        self.write_to_dump_file(f"Node {self.node_id} is the leader")
         self.write_to_log_file("NO OP 0")
         self.leader_id = self.node_id
         self.current_term += 1
         self.write_metadata()
         Thread(target=self.send_heartbeats()).start()
         Thread(target=self.lease_checker()).start()
-
-    def request_votes(self):
-        # Send vote requests to peer nodes
-        for peer_node in self.peer_nodes:
-            # Send a vote request to the peer node using grpc
-            # response = self.____(peer_node)
-            self.response = {"term": 1, "voteGranted": True}
-            return self.response
         
 
     def receive_vote_request(self, response):
@@ -467,7 +486,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
             if len(self.log) != 0:
                 print("Inside condition for log")
-                print(self.log)
+                #print(self.log)
 
                 request.prevLogIndex = len(self.log) - 1
                 request.prevLogTerm = int(self.log[-1].get('term'))
@@ -605,5 +624,6 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         print("Keyboard interrupt received. Exiting...")
         node.state = "follower"
+        node.exit()
         # Perform cleanup operations here if necessary
         sys.exit(0)
