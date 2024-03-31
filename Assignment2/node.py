@@ -226,11 +226,16 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         #     return response
 
         # Check if the node has already voted for a candidate in this term
-        print(self.voted_for, request.candidateId)
+
+        print(self.voted_for)
+        print(request.candidateId)
+
         if self.voted_for == -1 or self.voted_for == request.candidateId:
             print("Checking condition")
-            if (request.lastLogTerm > self.log[-1].term) or \
-                    (request.lastLogTerm == self.log[-1].term and request.lastLogIndex >= len(self.log) - 1):
+            print("hello",self.log)
+            
+            if (len(self.log)==0) or (request.lastLogTerm >= self.log[-1].get("term")) or   \
+                    (request.lastLogTerm == self.log[-1].get("term") and request.lastLogIndex >= len(self.log) - 1) :
                 print("Inner Condition")
                 response.voteGranted = True
                 self.voted_for = request.candidateId
@@ -241,7 +246,6 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         response.voteGranted = False
         return response
     
-
     def write_metadata(self):
         with open(self.metadata_file, 'w') as f:  # Use 'w' mode for write (overwrite)
             f.write(f"{self.current_term}\n{self.voted_for}\n")
@@ -289,16 +293,11 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             # No leader present, start an election
             self.state = "candidate"""
 
-        self.state = "follower"
+        self.follower_behavior()
         Thread(target=self.hearbeat_sensor).start()
         self.create_node_files(self.node_id)
 
-        if self.state == "follower":
-            self.follower_behavior()
-        elif self.state == "candidate":
-            self.candidate_behavior()
-        elif self.state == "leader":
-            self.leader_behavior()
+
 
     def follower_behavior(self):
 
@@ -317,14 +316,14 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         # Candidate behavior
         print("No Leader detected, Becoming a Candidate ")
         self.state = "candidate"
-
+        self.current_term+=1
 
         # Prepare the RequestVoteRequest message
         request = raft_pb2.RequestVoteRequest()
         request.term = self.current_term
         request.candidateId = self.node_id
         request.lastLogIndex = len(self.log) - 1 if self.log else 0
-        request.lastLogTerm = self.log[-1].term if self.log else 0
+        request.lastLogTerm = int(self.log[-1].get("term")) if len(self.log)!=0 else 0
 
         # Send the request to each peer node and gather responses
         votes_received = 1  # Counting self vote
