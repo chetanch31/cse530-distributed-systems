@@ -94,8 +94,12 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                 request = raft_pb2.AppendEntriesRequest()
                 request.term = self.current_term
                 request.leaderId = self.node_id
-                request.prevLogIndex = len(self.log) - 1 if self.log else 0
-                request.prevLogTerm = self.log[-1].get('term') if self.log else 0
+                if len(self.log) != 0:
+                    request.prevLogIndex = len(self.log) - 1
+                    request.prevLogTerm = int(self.log[-1].get('term'))
+                else:
+                    request.prevLogIndex = 0
+                    request.prevLogTerm = 0
                 request.leaderCommit = self.commit_index
                 request.isHeartbeat = False
                 entry = request.entries.add()
@@ -322,8 +326,14 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         request = raft_pb2.RequestVoteRequest()
         request.term = self.current_term
         request.candidateId = self.node_id
-        request.lastLogIndex = len(self.log) - 1 if self.log else 0
-        request.lastLogTerm = int(self.log[-1].get("term")) if len(self.log)!=0 else 0
+
+        if len(self.log) != 0:
+            print("Inside condition for log")
+            request.lastLogIndex = len(self.log) - 1 
+            request.lastLogTerm = int(self.log[-1].get("term"))
+        else:
+            request.lastLogIndex = 0
+            request.lastLogTerm = 0
 
         # Send the request to each peer node and gather responses
         votes_received = 1  # Counting self vote
@@ -451,9 +461,20 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             request = raft_pb2.AppendEntriesRequest()
             request.term = self.current_term
             request.leaderId = self.node_id
-            request.prevLogIndex = len(self.log) - 1 if self.log else 0  # Index of the last log entry
+            # request.prevLogIndex = len(self.log) - 1 if self.log else 0  # Index of the last log entry
             # print("Prtining prev log", self.log[-1])
-            request.prevLogTerm = self.log[-1].get('term') if self.log else 0  # Term of the last log entry
+            # request.prevLogTerm = self.log[-1].get('term') if self.log else 0  # Term of the last log entry
+
+            if len(self.log) != 0:
+                print("Inside condition for log")
+                print(self.log)
+
+                request.prevLogIndex = len(self.log) - 1
+                request.prevLogTerm = int(self.log[-1].get('term'))
+            else:
+                request.prevLogIndex = 0
+                request.prevLogTerm = 0
+
             request.leaderCommit = self.commit_index  # Index of highest log entry known to be committed
             request.leaderLeaseDuration = time.time()
             request.isHeartbeat = True
