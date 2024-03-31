@@ -13,6 +13,7 @@ import raft_pb2
 import raft_pb2_grpc
 import schedule
 
+
 # Define gRPC communication here (not implemented in this code snippet)
 
 class Node(raft_pb2_grpc.RaftNodeServicer):
@@ -54,24 +55,26 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         response = raft_pb2.ServeClientReply()
         print(request)
 
-        self.parse_and_apply_command(request)
-            
         if request.request == "ping" and self.leader_id == self.node_id:
+            print("Inside Leader")
             response.data = "data"
             response.leaderId = str(self.leader_id)
             response.success = True
 
-        else:
-            response.data = "data"
-            response.leaderId = str(self.leader_id)
-            response.success = False
+            return response
+
+        self.parse_and_apply_command(request.request)
+        response.data = "data"
+        response.leaderId = str(self.leader_id)
+        response.success = False
 
         return response
-    
+
     def parse_and_apply_command(self, command_str):
         # Split the command string into tokens
+        print("Parsing command")
         tokens = command_str.strip('{}').split()
-        
+
         if tokens[0] == 'SET':
             # Parse SET command
             if len(tokens) != 3:
@@ -105,8 +108,6 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         # Write content to log file
         with open(self.log_file, 'a') as f:
             f.write(content)
-
-        
 
     def AppendEntries(self, request, context):
 
@@ -183,7 +184,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         if self.leader_id is None:
             # No leader present, start an election
             self.state = "candidate"""
-        
+
         self.state = "leader"
 
         if self.state == "follower":
@@ -282,9 +283,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def leader_behavior(self):
         print(f"Node {self.node_id} is the leader")
         self.leader_id = self.node_id
-        self.current_term +=1
+        self.current_term += 1
         Thread(target=self.send_heartbeats()).start()
-
 
     def request_votes(self):
         # Send vote requests to peer nodes
@@ -329,7 +329,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         print("Sending heartbeats")
         while True:
             print("Sending heartbeats inside true")
-            if self.state!="leader":
+            if self.state != "leader":
                 break
 
             # Send heartbeats to followers
@@ -424,7 +424,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     node_id = int(sys.argv[1])
-    peer_nodes = ["localhost:50589", "localhost:50590","localhost:55591"]
+    peer_nodes = ["localhost:50589", "localhost:50590", "localhost:55591"]
 
     node = Node(node_id=node_id, peer_nodes=peer_nodes)
     node_ip = peer_nodes[node_id]
@@ -441,7 +441,7 @@ if __name__ == "__main__":
     Thread(target=node.start()).start()
 
     server.wait_for_termination()
-    
+
     """while True:        
         time.sleep(1)
         node.start()
