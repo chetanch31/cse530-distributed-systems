@@ -156,9 +156,10 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                     # Append the line to the list
                     log_lines.append(line)
                     tokens = line.strip('{}').split()
-                    key, value, term = tokens[1], tokens[2], tokens[3]
-                    self.log.append({'type': 'SET', 'key': key, 'value': value, 'term': term})
-
+                    if(tokens[0]=="SET"):
+                        key, value, term = tokens[1], tokens[2], tokens[3]
+                        self.log.append({'type': 'SET', 'key': key, 'value': value, 'term': term})
+                    
         except FileNotFoundError:
             print(f"Error: File '{self.log_file}' not found.")
         except Exception as e:
@@ -349,6 +350,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
     def leader_behavior(self):
         print(f"Node {self.node_id} is the leader")
+        self.write_to_log_file("NO OP 0")
         self.leader_id = self.node_id
         self.current_term += 1
         Thread(target=self.send_heartbeats()).start()
