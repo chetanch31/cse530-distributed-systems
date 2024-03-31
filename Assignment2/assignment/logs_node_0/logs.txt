@@ -1,0 +1,5 @@
+SET name A
+SET name A
+SET arm A
+SET arm a
+SET NAME A

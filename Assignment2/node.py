@@ -341,7 +341,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             request.term = self.current_term
             request.leaderId = self.node_id
             request.prevLogIndex = len(self.log) - 1 if self.log else 0  # Index of the last log entry
-            request.prevLogTerm = self.log[-1].term if self.log else 0  # Term of the last log entry
+            # print("Prtining prev log", self.log[-1])
+            request.prevLogTerm = self.log[-1].get('term') if self.log else 0  # Term of the last log entry
             request.leaderCommit = self.commit_index  # Index of highest log entry known to be committed
             request.leaderLeaseDuration = self.lease_duration
             request.isHeartbeat = True
