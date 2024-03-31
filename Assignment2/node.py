@@ -36,7 +36,9 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.heartbeat_timer = None
         self.hearbeat_detection = False
         self.x = 0
-        self.log_file = f'assignment/logs_node_{node_id}/logs.txt'
+        self.log_file = f'Assignment2/assignment/logs_node_{node_id}/logs.txt'
+        self.metadata_file = f'Assignment2/assignment/logs_node_{node_id}/metadata.txt'
+        self.dump_file = f'Assignment2/assignment/logs_node_{node_id}/dump.txt'
 
         # self.serve()
         # self.channel = grpc.insecure_channel("34.133.227.248:50051")
@@ -62,14 +64,12 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             response.data = "data"
             response.leaderId = str(self.leader_id)
             response.success = True
-
             return response
 
         print(self.parse_and_apply_command(request.request))
         response.data = "data"
         response.leaderId = str(self.leader_id)
         response.success = False
-
         return response
 
     def parse_and_apply_command(self, command_str):
@@ -165,6 +165,11 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         except Exception as e:
             print(f"Error occurred while reading file '{self.log_file}': {e}")
 
+    def write_to_dump_file(self, message):
+        with open(self.dump_file, 'a') as dump_file:
+            dump_file.write(f"{message}\n")
+
+
     def AppendEntries(self, request, context):
 
         if request.isHeartbeat:
@@ -221,11 +226,33 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                     (request.lastLogTerm == self.log[-1].term and request.lastLogIndex >= len(self.log) - 1):
                 response.voteGranted = True
                 self.voted_for = request.candidateId
+                self.write_metadata()
                 return response
 
         # If the conditions are not met, do not grant the vote
         response.voteGranted = False
         return response
+    
+
+    def write_metadata(self):
+        with open(self.metadata_file, 'w') as f:  # Use 'w' mode for write (overwrite)
+            f.write(f"{self.current_term}\n{self.voted_for}\n")
+
+    def read_metadata(self):
+        try:
+            with open(self.metadata_file, 'r') as f:
+                lines = f.readlines()
+                if len(lines) >= 2:
+                    self.current_term = int(lines[0].strip())
+                    self.voted_for = int(lines[1].strip())
+                    print(f"Metadata read successfully: current_term={self.current_term}, voted_for={self.voted_for}")
+                else:
+                    print("Error: Metadata file does not have enough lines.")
+        except FileNotFoundError:
+            print(f"Error: Metadata file '{self.metadata_file}' not found.")
+        except Exception as e:
+            print(f"Error reading metadata file: {e}")
+            
 
     def start(self):
         time.sleep(10)
@@ -236,6 +263,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def run(self):
         print(f"Node {self.node_id} is running and active.")
         self.fetch_log_lines()
+        self.read_metadata()
 
         """Thread(target=self.hearbeat_sensor).start()
         self.create_node_files(self.node_id)
@@ -353,6 +381,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.write_to_log_file("NO OP 0")
         self.leader_id = self.node_id
         self.current_term += 1
+        self.write_metadata()
         Thread(target=self.send_heartbeats()).start()
 
     def request_votes(self):
@@ -436,7 +465,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         pass
 
     def create_node_files(self, node_id):
-        base_dir = 'assignment'
+        base_dir = 'Assignment2/assignment'
         node_dir = f'logs_node_{node_id}'
         logs_file = 'logs.txt'
         metadata_file = 'metadata.txt'
