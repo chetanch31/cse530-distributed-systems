@@ -31,14 +31,14 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.last_applied = 0
         self.heartbeat_timeout = 1  # Heartbeat timeout (in seconds)
         self.lease_duration = 7  # Lease duration (in seconds)
-        self.leader_id = 0
+        self.leader_id = None
         self.election_timer = self.generate_random_float()
         self.heartbeat_timer = None
         self.hearbeat_detection = False
         self.x = 0
-        self.log_file = f'Assignment2/assignment/logs_node_{node_id}/logs.txt'
-        self.metadata_file = f'Assignment2/assignment/logs_node_{node_id}/metadata.txt'
-        self.dump_file = f'Assignment2/assignment/logs_node_{node_id}/dump.txt'
+        self.log_file = f'assignment/logs_node_{node_id}/logs.txt'
+        self.metadata_file = f'assignment/logs_node_{node_id}/metadata.txt'
+        self.dump_file = f'assignment/logs_node_{node_id}/dump.txt'
         self.lease_timer = 0
         self.new_leader_lease_check =0
         # self.serve()
@@ -176,6 +176,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         if request.isHeartbeat:
             # The current request is just a heartbeat
             self.x = 0
+            self.leader_id=request.leaderId
             self.new_leader_lease_check=request.leaderLeaseDuration
             return raft_pb2.AppendEntriesResponse(term=self.current_term, success=True)
 
@@ -215,6 +216,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def RequestVote(self, request, context):
         response = raft_pb2.RequestVoteResponse()
         response.term = self.current_term
+        response.voteGranted = True
+        return response
 
         # Check if the candidate's term is less than the current term
         if request.term < self.current_term:
@@ -285,6 +288,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
         self.state = "follower"
         Thread(target=self.hearbeat_sensor).start()
+        self.create_node_files(self.node_id)
 
         if self.state == "follower":
             self.follower_behavior()
@@ -383,7 +387,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             print("Unknown message type")
 
     def leader_behavior(self):
-        time.sleep(time.time()-self.new_leader_lease_check)
+        print(int(time.time()-self.new_leader_lease_check))
+        #time.sleep(time.time()-self.new_leader_lease_check)
         print(f"Node {self.node_id} is the leader")
         self.write_to_log_file("NO OP 0")
         self.leader_id = self.node_id
@@ -494,7 +499,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         pass
 
     def create_node_files(self, node_id):
-        base_dir = 'Assignment2/assignment'
+        base_dir = 'assignment'
         node_dir = f'logs_node_{node_id}'
         logs_file = 'logs.txt'
         metadata_file = 'metadata.txt'

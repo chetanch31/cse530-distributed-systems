@@ -44,7 +44,7 @@ class RaftClient:
                 time.sleep(1)
 
 if __name__ == "__main__":
-    node_addresses = ["localhost:50589", "localhost:50590"]
+    node_addresses = ["localhost:50589", "localhost:50590", "localhost:55591"]
     client = RaftClient(node_addresses)
 
     # Discover the leader before serving client requests
