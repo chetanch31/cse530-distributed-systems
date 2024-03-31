@@ -134,9 +134,35 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
     def write_to_log_file(self, content):
         # Write content to log file
-        with open(self.log_file, 'a') as f:
-            print(content)
-            f.write(content)
+        try:
+            # Write content to log file
+            with open(self.log_file, 'a', encoding='utf-8') as f:
+                f.write(content + '\n')
+            print(f"Content '{content}' written to log file.")
+        except Exception as e:
+            print(f"Error writing to log file: {e}")
+
+    def fetch_log_lines(self):
+        # List to store the fetched log lines as strings
+        log_lines = []
+
+        try:
+            # Open the log file in read mode
+            with open(self.log_file, 'r') as file:
+                # Read each line from the file
+                for line in file:
+                    # Strip any leading or trailing whitespace characters
+                    line = line.strip()
+                    # Append the line to the list
+                    log_lines.append(line)
+                    tokens = line.strip('{}').split()
+                    key, value, term = tokens[1], tokens[2], tokens[3]
+                    self.log.append({'type': 'SET', 'key': key, 'value': value, 'term': term})
+
+        except FileNotFoundError:
+            print(f"Error: File '{self.log_file}' not found.")
+        except Exception as e:
+            print(f"Error occurred while reading file '{self.log_file}': {e}")
 
     def AppendEntries(self, request, context):
 
@@ -208,6 +234,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
     def run(self):
         print(f"Node {self.node_id} is running and active.")
+        self.fetch_log_lines()
 
         """Thread(target=self.hearbeat_sensor).start()
         self.create_node_files(self.node_id)
