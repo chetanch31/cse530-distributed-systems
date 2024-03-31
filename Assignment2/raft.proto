@@ -25,7 +25,7 @@ message AppendEntriesRequest {
     int64 prevLogTerm = 4;
     repeated LogEntry entries = 5;
     int64 leaderCommit = 6;
-    int64 leaderLeaseDuration = 7;
+    float leaderLeaseDuration = 7;
     bool isHeartbeat = 8;
 }
 

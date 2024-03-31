@@ -466,7 +466,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                     channel = grpc.insecure_channel(peer_node)
                     stub = raft_pb2_grpc.RaftNodeStub(channel)
                     response = stub.AppendEntries(request=request)
-                    if response.status:
+                    if response.success:
                         count+=1
                     print(f"Got response: {response}")
                 except _InactiveRpcError:
@@ -551,31 +551,36 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
 
 if __name__ == "__main__":
+    try:
+        if len(sys.argv) != 2:
+            print("Usage: python filename.py <node_id>")
+            sys.exit(1)
 
-    if len(sys.argv) != 2:
-        print("Usage: python filename.py <node_id>")
-        sys.exit(1)
+        node_id = int(sys.argv[1])
+        peer_nodes = ["localhost:50589", "localhost:50590", "localhost:55591"]
 
-    node_id = int(sys.argv[1])
-    peer_nodes = ["localhost:50589", "localhost:50590", "localhost:55591"]
+        node = Node(node_id=node_id, peer_nodes=peer_nodes)
+        node_ip = peer_nodes[node_id]
 
-    node = Node(node_id=node_id, peer_nodes=peer_nodes)
-    node_ip = peer_nodes[node_id]
+        server = grpc.server(futures.ThreadPoolExecutor())
+        raft_pb2_grpc.add_RaftNodeServicer_to_server(node, server)
 
-    server = grpc.server(futures.ThreadPoolExecutor())
-    raft_pb2_grpc.add_RaftNodeServicer_to_server(node, server)
+        server.add_insecure_port(node_ip)
+        server.start()
 
-    server.add_insecure_port(node_ip)
-    server.start()
+        print(f"Server started for node {node_id}. Listening on {node_ip}")
 
-    print(f"Server started for node {node_id}. Listening on {node_ip}")
-
-    time.sleep(1)
-    Thread(target=node.start()).start()
-
-    server.wait_for_termination()
-
-    """while True:        
         time.sleep(1)
-        node.start()
-        print(f"Node {node_id} is running...")"""
+        Thread(target=node.start()).start()
+
+        server.wait_for_termination()
+
+        """while True:        
+            time.sleep(1)
+            node.start()
+            print(f"Node {node_id} is running...")"""
+    except KeyboardInterrupt:
+        print("Keyboard interrupt received. Exiting...")
+        node.state = "follower"
+        # Perform cleanup operations here if necessary
+        sys.exit(0)
