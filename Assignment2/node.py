@@ -65,7 +65,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
             return response
 
-        self.parse_and_apply_command(request.request)
+        print(self.parse_and_apply_command(request.request))
         response.data = "data"
         response.leaderId = str(self.leader_id)
         response.success = False
@@ -84,7 +84,32 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             key, value = tokens[1], tokens[2]
             self.log.append({'type': 'SET', 'key': key, 'value': value, 'term':self.current_term})
             print(self.log)
-            self.write_to_log_file(f"SET {key} {value}\n")  # Write to log file
+            self.write_to_log_file(f"SET {key} {value} {self.current_term}\n")  # Write to log file
+
+            for current_id, peer_node in enumerate(self.peer_nodes, start=0):
+                if current_id == self.node_id:
+                    continue
+
+                request = raft_pb2.AppendEntriesRequest()
+                request.term = self.current_term
+                request.leaderId = self.node_id
+                request.prevLogIndex = len(self.log) - 1 if self.log else 0
+                request.prevLogTerm = self.log[-1].get('term') if self.log else 0
+                request.leaderCommit = self.commit_index
+                request.isHeartbeat = False
+                entry = request.entries.add()
+                entry.index = len(self.log)
+                entry.term = self.current_term
+                entry.data = f"SET {key} {value} {self.current_term}\n"
+
+                try:
+                    channel = grpc.insecure_channel(peer_node)
+                    stub = raft_pb2_grpc.RaftNodeStub(channel)
+                    response = stub.AppendEntries(request=request)
+                    print(f"AppendEntries response from node {node_id}: {response}")
+                except _InactiveRpcError:
+                    print(f"The node at {peer_node} is offline")
+
             return "SET operation successful"
 
         elif tokens[0] == 'GET':
@@ -116,7 +141,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def AppendEntries(self, request, context):
 
         if request.isHeartbeat:
-            # The current request is just an heartbeat
+            # The current request is just a heartbeat
             self.x = 0
             return raft_pb2.AppendEntriesResponse(term=self.current_term, success=True)
 
@@ -129,17 +154,28 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
 
         # Step 3: If an existing entry conflicts with a new one, delete the existing entry and all that follow it
         # This step can be omitted if you handle log consistency elsewhere
+        if len(request.entries) > 0:
+            for entry in request.entries:
+                if entry.index <= len(self.log):
+                    if self.log[entry.index - 1].term != entry.term:
+                        # Conflict found, delete existing entry and all that follow it
+                        del self.log[entry.index - 1:]
+                        break
 
+        # Append new entries to the log
         for entry in request.entries:
-            if len(self.log) < entry.index:
+            if entry.index > len(self.log):
                 self.log.append(entry)
             else:
                 self.log[entry.index - 1] = entry
 
+        # Update commit index if necessary
         if request.leaderCommit > self.commit_index:
             self.commit_index = min(request.leaderCommit, len(self.log))
 
+        # Update current term
         self.current_term = request.term
+
         return raft_pb2.AppendEntriesResponse(term=self.current_term, success=True)
 
     def RequestVote(self, request, context):
