@@ -36,6 +36,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.heartbeat_timer = None
         self.hearbeat_detection = False
         self.x = 0
+        self.log_file = f'assignment/logs_node_{node_id}/logs.txt'
+
         # self.serve()
         # self.channel = grpc.insecure_channel("34.133.227.248:50051")
         # self.stub = task_pb2_grpc.MarketStub(self.channel)
@@ -80,7 +82,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             if len(tokens) != 3:
                 return "SET command should have format: SET key value"
             key, value = tokens[1], tokens[2]
-            self.log.append({'type': 'SET', 'key': key, 'value': value})
+            self.log.append({'type': 'SET', 'key': key, 'value': value, 'term':self.current_term})
+            print(self.log)
             self.write_to_log_file(f"SET {key} {value}\n")  # Write to log file
             return "SET operation successful"
 
@@ -107,6 +110,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def write_to_log_file(self, content):
         # Write content to log file
         with open(self.log_file, 'a') as f:
+            print(content)
             f.write(content)
 
     def AppendEntries(self, request, context):
