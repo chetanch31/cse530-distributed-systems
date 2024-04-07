@@ -40,6 +40,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         self.dump_file = f'assignment/logs_node_{node_id}/dump.txt'
         self.lease_timer = 0
         self.new_leader_lease_check =0
+        self.log_increment= 0
         # self.serve()
         # self.channel = grpc.insecure_channel("34.133.227.248:50051")
         # self.stub = task_pb2_grpc.MarketStub(self.channel)
@@ -65,8 +66,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             response.leaderId = str(self.leader_id)
             response.success = True
             return response
-
-        print(self.parse_and_apply_command(request))
+        
+        self.parse_and_apply_command(request.request)
         response.data = "data"
         response.leaderId = str(self.leader_id)
         response.success = False
@@ -84,7 +85,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             key, value = tokens[1], tokens[2]
             self.log.append({'type': 'SET', 'key': key, 'value': value, 'term':self.current_term})
             print(self.log)
-            self.write_to_log_file(f"SET {key} {value} {self.current_term}\n")  # Write to log file
+            self.write_to_log_file(f"SET {key} {value} {self.current_term}\n")  #Write to log file
             self.write_to_dump_file(f"SET {key} {value} {self.current_term}\n")
 
             for current_id, peer_node in enumerate(self.peer_nodes, start=0):
@@ -106,6 +107,7 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                 entry.index = len(self.log)
                 entry.term = self.current_term
                 entry.data = f"SET {key} {value} {self.current_term}\n"
+                request.entries = entry
 
                 try:
                     channel = grpc.insecure_channel(peer_node)
@@ -448,26 +450,6 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
         else:
             return False
 
-    def start_election_timer(self):
-        # Start the election timer
-        self.election_timer = 0
-
-    # def reset_election_timer(self):
-    #     # Reset the election timer
-    #     self.election_timer = None
-
-    def start_heartbeat_timer(self):
-        # Start the heartbeat timer
-        self.heartbeat_timer = 0
-
-    def reset_heartbeat_timer(self):
-        # Reset the heartbeat timer
-        self.heartbeat_timer = None
-
-    def acquire_lease(self):
-        # Acquire the leader lease
-        pass
-
     def send_heartbeats(self):
         print("Sending heartbeats")
         while True:
@@ -531,14 +513,6 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             self.lease_timer = self.lease_timer+1
             time.sleep(self.lease_duration)
         
-
-    def append_entries(self, term, leader_id):
-        # Append entries to the log
-        pass
-
-    def receive_append_entries(self, term, leader_id):
-        # Follower's response to append entries from the leader
-        pass
 
     def create_node_files(self, node_id):
         base_dir = 'assignment'
