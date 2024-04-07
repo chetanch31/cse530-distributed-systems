@@ -1,0 +1,5 @@
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+The node at localhost:55591 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 1 is in Follower state.

@@ -25,23 +25,22 @@ class RaftClient:
         return False
 
     def serve_client(self, request):
-        while True:
-            try:
-                with grpc.insecure_channel(self.leader_address) as channel:
-                    stub = raft_pb2_grpc.RaftNodeStub(channel)
-                    response = stub.ServeClient(raft_pb2.ServeClientArgs(request=request))
-                    print(response)
-                    return response
-            except grpc.RpcError as e:
-                print(f"Error: {e}")
-                print("Leader not available, retrying...")
-                self.leader_address = None
-                self.discover_leader()
-                time.sleep(1)
-            except Exception as e:
-                print(f"Error: {e}")
-                print("Retrying...")
-                time.sleep(1)
+        try:
+            with grpc.insecure_channel(self.leader_address) as channel:
+                stub = raft_pb2_grpc.RaftNodeStub(channel)
+                response = stub.ServeClient(raft_pb2.ServeClientArgs(request=request))
+                print(response)
+                return response
+        except grpc.RpcError as e:
+            print(f"Error: {e}")
+            print("Leader not available, retrying...")
+            self.leader_address = None
+            self.discover_leader()
+            time.sleep(1)
+        except Exception as e:
+            print(f"Error: {e}")
+            print("Retrying...")
+            time.sleep(1)
 
 if __name__ == "__main__":
     node_addresses = ["localhost:50589", "localhost:50590", "localhost:55591"]

@@ -66,8 +66,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
             response.success = True
             return response
 
-        print(self.parse_and_apply_command(request))
-        response.data = "data"
+        data = self.parse_and_apply_command(request.request)
+        response.data = data
         response.leaderId = str(self.leader_id)
         response.success = False
         return response
@@ -75,7 +75,8 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
     def parse_and_apply_command(self, command_str):
         # Split the command string into tokens
         print("Parsing command")
-        tokens = command_str.strip('{}').split()
+        print(command_str)
+        tokens = command_str.split()
 
         if tokens[0] == 'SET':
             # Parse SET command
@@ -83,9 +84,12 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                 return "SET command should have format: SET key value"
             key, value = tokens[1], tokens[2]
             self.log.append({'type': 'SET', 'key': key, 'value': value, 'term':self.current_term})
+            
             print(self.log)
-            self.write_to_log_file(f"SET {key} {value} {self.current_term}\n")  # Write to log file
-            self.write_to_dump_file(f"SET {key} {value} {self.current_term}\n")
+            entry_to_add = f"SET {key} {value} {self.current_term}\n"
+
+            self.write_to_log_file(entry_to_add)  # Write to log file
+            self.write_to_dump_file(entry_to_add)
 
             for current_id, peer_node in enumerate(self.peer_nodes, start=0):
                 if current_id == self.node_id:
@@ -102,10 +106,17 @@ class Node(raft_pb2_grpc.RaftNodeServicer):
                     request.prevLogTerm = 0
                 request.leaderCommit = self.commit_index
                 request.isHeartbeat = False
-                entry = request.entries.add()
-                entry.index = len(self.log)
-                entry.term = self.current_term
-                entry.data = f"SET {key} {value} {self.current_term}\n"
+                
+                current_entry = raft_pb2.LogEntry(
+                    index = len(self.log) - 1,
+                    term = self.current_term,
+                    data = entry_to_add
+                )
+
+                request.entries.append(current_entry)
+                # entry.index = len(self.log)
+                # entry.term = self.current_term
+                # entry.data = f"SET {key} {value} {self.current_term}\n"
 
                 try:
                     channel = grpc.insecure_channel(peer_node)
