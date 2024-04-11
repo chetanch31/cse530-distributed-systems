@@ -1,0 +1,75 @@
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Voted for 1
+Node 2 is running and active.
+Metadata read successfully: current_term=0, voted_for=1
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+Node 2 is running and active.
+Metadata read successfully: current_term=0, voted_for=1
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+Did not receive majority of votes. Remaining a candidate.
+Node 2 is in Follower state.
+No Leader detected, Becoming a Candidate 
+Voted for 0
+Node 2 is running and active.
+Metadata read successfully: current_term=0, voted_for=0
+Node 2 is in Follower state.

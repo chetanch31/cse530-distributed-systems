@@ -1,0 +1,97 @@
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+The node at localhost:55591 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+Voted for 1
+Node 3 is running and active.
+Metadata read successfully: current_term=0, voted_for=1
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+Node 3 is running and active.
+Metadata read successfully: current_term=0, voted_for=1
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+The node at localhost:50589 is offline
+The node at localhost:50590 is offline
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+Did not receive majority of votes. Remaining a candidate.
+Node 3 is in Follower state.
+No Leader detected, Becoming a Candidate 
+Node 3 is running and active.
+Metadata read successfully: current_term=0, voted_for=1
+Node 3 is in Follower state.
