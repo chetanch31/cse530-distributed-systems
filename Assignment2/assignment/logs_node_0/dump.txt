@@ -1,0 +1,6 @@
+No Leader detected, Becoming a Candidate 
+The node at localhost:55591 is offline
+Received majority of votes. Becoming the leader.
+Node 0 is the leader
+SET ARG 1 2
+
