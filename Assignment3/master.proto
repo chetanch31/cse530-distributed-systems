@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package master;
+
+message MapperInputRequest {
+    message DataPoint {
+        int64 x = 1;
+        int64 y = 2;
+    }
+
+    message Centroid {
+        float x = 1;
+        float y = 2;
+    }
+
+    repeated DataPoint data_points = 1;
+    repeated Centroid centroids = 2;
+}
+
+message MapperInputResponse {
+    bool status = 1;
+}
+
+service Master {
+    rpc MapperInput (MapperInputRequest) returns (MapperInputResponse);
+}
