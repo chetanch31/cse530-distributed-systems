@@ -2,18 +2,22 @@ syntax = "proto3";
 
 package master;
 
+message Centroid {
+    float x = 1;
+    float y = 2;
+}
+
 message MapperInputRequest {
     message DataPoint {
         int64 x = 1;
         int64 y = 2;
     }
-
-    message Centroid {
-        float x = 1;
-        float y = 2;
-    }
-
     repeated DataPoint data_points = 1;
+    repeated Centroid centroids = 2;
+}
+
+message ReducerInputRequest {
+    int32 centroid_id = 1;
     repeated Centroid centroids = 2;
 }
 
@@ -21,6 +25,23 @@ message MapperInputResponse {
     bool status = 1;
 }
 
+message ReducerInputResponse {
+    bool status = 1;
+    float x = 2;
+    float y = 3;
+}
+
+message DataPointRequest {
+    int32 id = 1;
+}
+
+message DataPointResponse {
+    string points = 1;
+    bool status = 2;
+}
+
 service Master {
     rpc MapperInput (MapperInputRequest) returns (MapperInputResponse);
+    rpc ReducerInput (ReducerInputRequest) returns (ReducerInputResponse);
+    rpc RequestPartition (DataPointRequest) returns (DataPointResponse);
 }

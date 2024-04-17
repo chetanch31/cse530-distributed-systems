@@ -14,21 +14,29 @@ _sym_db = _symbol_database.Default()
 
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cmaster.proto\x12\x06master\"\xcc\x01\n\x12MapperInputRequest\x12\x39\n\x0b\x64\x61ta_points\x18\x01 \x03(\x0b\x32$.master.MapperInputRequest.DataPoint\x12\x36\n\tcentroids\x18\x02 \x03(\x0b\x32#.master.MapperInputRequest.Centroid\x1a!\n\tDataPoint\x12\t\n\x01x\x18\x01 \x01(\x03\x12\t\n\x01y\x18\x02 \x01(\x03\x1a \n\x08\x43\x65ntroid\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\"%\n\x13MapperInputResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08\x32P\n\x06Master\x12\x46\n\x0bMapperInput\x12\x1a.master.MapperInputRequest\x1a\x1b.master.MapperInputResponseb\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x0cmaster.proto\x12\x06master\" \n\x08\x43\x65ntroid\x12\t\n\x01x\x18\x01 \x01(\x02\x12\t\n\x01y\x18\x02 \x01(\x02\"\x97\x01\n\x12MapperInputRequest\x12\x39\n\x0b\x64\x61ta_points\x18\x01 \x03(\x0b\x32$.master.MapperInputRequest.DataPoint\x12#\n\tcentroids\x18\x02 \x03(\x0b\x32\x10.master.Centroid\x1a!\n\tDataPoint\x12\t\n\x01x\x18\x01 \x01(\x03\x12\t\n\x01y\x18\x02 \x01(\x03\"O\n\x13ReducerInputRequest\x12\x13\n\x0b\x63\x65ntroid_id\x18\x01 \x01(\x05\x12#\n\tcentroids\x18\x02 \x03(\x0b\x32\x10.master.Centroid\"%\n\x13MapperInputResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08\"<\n\x14ReducerInputResponse\x12\x0e\n\x06status\x18\x01 \x01(\x08\x12\t\n\x01x\x18\x02 \x01(\x02\x12\t\n\x01y\x18\x03 \x01(\x02\"\x1e\n\x10\x44\x61taPointRequest\x12\n\n\x02id\x18\x01 \x01(\x05\"3\n\x11\x44\x61taPointResponse\x12\x0e\n\x06points\x18\x01 \x01(\t\x12\x0e\n\x06status\x18\x02 \x01(\x08\x32\xe4\x01\n\x06Master\x12\x46\n\x0bMapperInput\x12\x1a.master.MapperInputRequest\x1a\x1b.master.MapperInputResponse\x12I\n\x0cReducerInput\x12\x1b.master.ReducerInputRequest\x1a\x1c.master.ReducerInputResponse\x12G\n\x10RequestPartition\x12\x18.master.DataPointRequest\x1a\x19.master.DataPointResponseb\x06proto3')
 
 _globals = globals()
 _builder.BuildMessageAndEnumDescriptors(DESCRIPTOR, _globals)
 _builder.BuildTopDescriptorsAndMessages(DESCRIPTOR, 'master_pb2', _globals)
 if _descriptor._USE_C_DESCRIPTORS == False:
   DESCRIPTOR._options = None
-  _globals['_MAPPERINPUTREQUEST']._serialized_start=25
-  _globals['_MAPPERINPUTREQUEST']._serialized_end=229
-  _globals['_MAPPERINPUTREQUEST_DATAPOINT']._serialized_start=162
-  _globals['_MAPPERINPUTREQUEST_DATAPOINT']._serialized_end=195
-  _globals['_MAPPERINPUTREQUEST_CENTROID']._serialized_start=197
-  _globals['_MAPPERINPUTREQUEST_CENTROID']._serialized_end=229
-  _globals['_MAPPERINPUTRESPONSE']._serialized_start=231
-  _globals['_MAPPERINPUTRESPONSE']._serialized_end=268
-  _globals['_MASTER']._serialized_start=270
-  _globals['_MASTER']._serialized_end=350
+  _globals['_CENTROID']._serialized_start=24
+  _globals['_CENTROID']._serialized_end=56
+  _globals['_MAPPERINPUTREQUEST']._serialized_start=59
+  _globals['_MAPPERINPUTREQUEST']._serialized_end=210
+  _globals['_MAPPERINPUTREQUEST_DATAPOINT']._serialized_start=177
+  _globals['_MAPPERINPUTREQUEST_DATAPOINT']._serialized_end=210
+  _globals['_REDUCERINPUTREQUEST']._serialized_start=212
+  _globals['_REDUCERINPUTREQUEST']._serialized_end=291
+  _globals['_MAPPERINPUTRESPONSE']._serialized_start=293
+  _globals['_MAPPERINPUTRESPONSE']._serialized_end=330
+  _globals['_REDUCERINPUTRESPONSE']._serialized_start=332
+  _globals['_REDUCERINPUTRESPONSE']._serialized_end=392
+  _globals['_DATAPOINTREQUEST']._serialized_start=394
+  _globals['_DATAPOINTREQUEST']._serialized_end=424
+  _globals['_DATAPOINTRESPONSE']._serialized_start=426
+  _globals['_DATAPOINTRESPONSE']._serialized_end=477
+  _globals['_MASTER']._serialized_start=480
+  _globals['_MASTER']._serialized_end=708
 # @@protoc_insertion_point(module_scope)

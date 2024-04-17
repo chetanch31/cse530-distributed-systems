@@ -35,6 +35,20 @@ class Mapper(pb2_grpc.MasterServicer):
         else:
             return pb2.MapperInputResponse(status=False)
 
+
+    def RequestPartition(self, request, context):
+        request_id = request.id
+        file_name = os.path.join(self.output_dir, f'partition_{request_id}.txt')
+        read_str = ""
+        print(request_id)
+        print("File: ", file_name)
+
+        with open(file_name, "r") as file:
+            read_str = file.read()
+
+        return pb2.DataPointResponse(points=read_str, status=True)
+        
+
     def read_and_parse_points(self, index_list):
         data_points = []
         with open(self.file_path, 'r') as file:
@@ -76,7 +90,7 @@ class Mapper(pb2_grpc.MasterServicer):
             output_file = os.path.join(self.output_dir, f'partition_{i}.txt')
             with open(output_file, 'w') as f:
                 for key, value in partition:
-                    f.write(f"{key}\t{value}\n")
+                    f.write(f"{value}\n")
 
     def serve(self):
         server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))

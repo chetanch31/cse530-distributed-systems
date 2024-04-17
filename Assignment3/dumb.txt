@@ -1,0 +1,88 @@
+[17:04:2024 23:12:58]:Divinding indices
+[17:04:2024 23:12:58]:Master intiated
+[17:04:2024 23:12:58]:Random centroid values: [[0.9810891846129544, 0.09684353440370008], [0.5006091776924979, 0.6389447918337241], [0.04991859635149254, 0.7606431317385789]]
+[17:04:2024 23:12:58]:Mapper 0 returned False: Retrying
+[17:04:2024 23:12:58]:Mapper 2 returned False: Retrying
+[17:04:2024 23:12:58]:Mapper 1 returned True.
+[17:04:2024 23:13:00]:Mapper 2 returned False: Retrying
+[17:04:2024 23:13:00]:Mapper 0 returned True.
+[17:04:2024 23:13:02]:Mapper 2 returned False: Retrying
+[17:04:2024 23:13:04]:Mapper 2 returned True.
+[17:04:2024 23:13:04]:Reducer 1 returned False: Retrying
+[17:04:2024 23:13:04]:Reducer 2 returned False: Retrying
+[17:04:2024 23:13:04]:Reducer 0 returned True.
+[17:04:2024 23:13:04]:Received Centroids: [0.981089174747467, 0.09684353321790695] from reducer 0
+[17:04:2024 23:13:06]:Reducer 2 returned False: Retrying
+[17:04:2024 23:13:06]:Reducer 1 returned False: Retrying
+[17:04:2024 23:13:08]:Reducer 1 returned False: Retrying
+[17:04:2024 23:13:08]:Reducer 2 returned True.
+[17:04:2024 23:13:08]:Received Centroids: [0.04991859570145607, 0.7606431245803833] from reducer 2
+[17:04:2024 23:13:10]:Reducer 1 returned True.
+[17:04:2024 23:13:10]:Received Centroids: [0.5006091594696045, 0.6389448046684265] from reducer 1
+[17:04:2024 23:13:10]:Iteration 0: Centroids = [[0.981089174747467, 0.09684353321790695], [0.5006091594696045, 0.6389448046684265], [0.04991859570145607, 0.7606431245803833]]
+[17:04:2024 23:13:10]:Mapper 1 returned False: Retrying
+[17:04:2024 23:13:10]:Mapper 2 returned False: Retrying
+[17:04:2024 23:13:10]:Mapper 0 returned True.
+[17:04:2024 23:13:12]:Mapper 1 returned False: Retrying
+[17:04:2024 23:13:12]:Mapper 2 returned False: Retrying
+[17:04:2024 23:13:14]:Mapper 1 returned False: Retrying
+[17:04:2024 23:13:14]:Mapper 2 returned False: Retrying
+[17:04:2024 23:13:16]:Mapper 2 returned False: Retrying
+[17:04:2024 23:13:16]:Mapper 1 returned True.
+[17:04:2024 23:13:18]:Mapper 2 returned True.
+[17:04:2024 23:13:18]:Reducer 1 returned False: Retrying
+[17:04:2024 23:13:18]:Reducer 0 returned True.
+[17:04:2024 23:13:18]:Received Centroids: [0.981089174747467, 0.09684353321790695] from reducer 0
+[17:04:2024 23:13:18]:Reducer 2 returned True.
+[17:04:2024 23:13:18]:Received Centroids: [0.04991859570145607, 0.7606431245803833] from reducer 2
+[17:04:2024 23:13:20]:Reducer 1 returned True.
+[17:04:2024 23:13:20]:Received Centroids: [0.5006091594696045, 0.6389448046684265] from reducer 1
+[17:04:2024 23:13:20]:Iteration 1: Centroids = [[0.981089174747467, 0.09684353321790695], [0.5006091594696045, 0.6389448046684265], [0.04991859570145607, 0.7606431245803833]]
+[17:04:2024 23:13:20]:Mapper 1 returned False: Retrying
+[17:04:2024 23:13:20]:Mapper 0 returned True.
+[17:04:2024 23:13:20]:Mapper 2 returned True.
+[17:04:2024 23:13:22]:Mapper 1 returned True.
+[17:04:2024 23:13:22]:Reducer 2 returned False: Retrying
+[17:04:2024 23:13:22]:Reducer 1 returned True.
+[17:04:2024 23:13:22]:Received Centroids: [0.5006091594696045, 0.6389448046684265] from reducer 1
+[17:04:2024 23:13:22]:Reducer 0 returned True.
+[17:04:2024 23:13:22]:Received Centroids: [0.981089174747467, 0.09684353321790695] from reducer 0
+[17:04:2024 23:13:24]:Reducer 2 returned True.
+[17:04:2024 23:13:24]:Received Centroids: [0.04991859570145607, 0.7606431245803833] from reducer 2
+[17:04:2024 23:13:24]:Iteration 2: Centroids = [[0.981089174747467, 0.09684353321790695], [0.5006091594696045, 0.6389448046684265], [0.04991859570145607, 0.7606431245803833]]
+[17:04:2024 23:13:24]:Mapper 2 returned False: Retrying
+[17:04:2024 23:13:24]:Mapper 1 returned True.
+[17:04:2024 23:13:24]:Mapper 0 returned True.
+[17:04:2024 23:13:26]:Mapper 2 returned True.
+[17:04:2024 23:13:26]:Reducer 0 returned False: Retrying
+[17:04:2024 23:13:26]:Reducer 1 returned False: Retrying
+[17:04:2024 23:13:26]:Reducer 2 returned True.
+[17:04:2024 23:13:26]:Received Centroids: [0.04991859570145607, 0.7606431245803833] from reducer 2
+[17:04:2024 23:13:28]:Reducer 0 returned False: Retrying
+[17:04:2024 23:13:28]:Reducer 1 returned True.
+[17:04:2024 23:13:28]:Received Centroids: [0.5006091594696045, 0.6389448046684265] from reducer 1
+[17:04:2024 23:13:30]:Reducer 0 returned False: Retrying
+[17:04:2024 23:13:32]:Reducer 0 returned True.
+[17:04:2024 23:13:32]:Received Centroids: [0.981089174747467, 0.09684353321790695] from reducer 0
+[17:04:2024 23:13:32]:Iteration 3: Centroids = [[0.981089174747467, 0.09684353321790695], [0.5006091594696045, 0.6389448046684265], [0.04991859570145607, 0.7606431245803833]]
+[17:04:2024 23:13:32]:Mapper 0 returned False: Retrying
+[17:04:2024 23:13:32]:Mapper 1 returned False: Retrying
+[17:04:2024 23:13:32]:Mapper 2 returned True.
+[17:04:2024 23:13:34]:Mapper 0 returned False: Retrying
+[17:04:2024 23:13:34]:Mapper 1 returned True.
+[17:04:2024 23:13:36]:Mapper 0 returned False: Retrying
+[17:04:2024 23:13:38]:Mapper 0 returned False: Retrying
+[17:04:2024 23:13:40]:Mapper 0 returned True.
+[17:04:2024 23:13:40]:Reducer 0 returned False: Retrying
+[17:04:2024 23:13:40]:Reducer 1 returned False: Retrying
+[17:04:2024 23:13:40]:Reducer 2 returned True.
+[17:04:2024 23:13:40]:Received Centroids: [0.04991859570145607, 0.7606431245803833] from reducer 2
+[17:04:2024 23:13:42]:Reducer 0 returned False: Retrying
+[17:04:2024 23:13:42]:Reducer 1 returned False: Retrying
+[17:04:2024 23:13:44]:Reducer 0 returned False: Retrying
+[17:04:2024 23:13:44]:Reducer 1 returned True.
+[17:04:2024 23:13:44]:Received Centroids: [0.5006091594696045, 0.6389448046684265] from reducer 1
+[17:04:2024 23:13:46]:Reducer 0 returned False: Retrying
+[17:04:2024 23:13:48]:Reducer 0 returned True.
+[17:04:2024 23:13:48]:Received Centroids: [0.981089174747467, 0.09684353321790695] from reducer 0
+[17:04:2024 23:13:48]:Iteration 4: Centroids = [[0.981089174747467, 0.09684353321790695], [0.5006091594696045, 0.6389448046684265], [0.04991859570145607, 0.7606431245803833]]
